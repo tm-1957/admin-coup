@@ -7,23 +7,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#080b10;
-  --surface:#0e1318;
-  --surface2:#141a22;
-  --border:rgba(201,168,76,.15);
-  --border2:rgba(201,168,76,.08);
-  --gold:#c9a84c;
-  --gold-lt:#f0d070;
-  --gold-glow:rgba(201,168,76,.25);
-  --crimson:#c0392b;
-  --crimson-lt:#e74c3c;
-  --emerald:#1a7a4a;
-  --emerald-lt:#2ecc71;
-  --sapphire:#1a4a8a;
-  --sapphire-lt:#3498db;
-  --text:#e8e0d0;
-  --text-dim:#8a8070;
-  --text-muted:#4a4540;
+  --bg:#f4f0e8;
+  --surface:#ffffff;
+  --surface2:#f9f6f0;
+  --border:rgba(160,120,40,.2);
+  --border2:rgba(160,120,40,.1);
+  --gold:#a07828;
+  --gold-lt:#c49a30;
+  --gold-glow:rgba(160,120,40,.2);
+  --crimson:#b03020;
+  --crimson-lt:#d44030;
+  --emerald:#1a6a3a;
+  --emerald-lt:#28a05a;
+  --sapphire:#1a3a8a;
+  --sapphire-lt:#2a5acc;
+  --text:#2a2010;
+  --text-dim:#7a6840;
+  --text-muted:#b0a880;
+  --shadow:0 2px 16px rgba(160,120,40,.10);
+  --shadow-lg:0 8px 32px rgba(160,120,40,.15);
   --radius:12px;
   --radius-sm:8px;
   --mono:'IBM Plex Mono',monospace;
@@ -33,146 +35,167 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
 
+/* ── BG TEXTURE ── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:radial-gradient(circle at 20% 20%, rgba(160,120,40,.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(160,120,40,.04) 0%, transparent 50%);
+  pointer-events:none;z-index:0;
+}
+
 /* ── LOGIN ── */
 #login-screen{
   position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(ellipse at 50% 40%,rgba(201,168,76,.06) 0%,transparent 70%),var(--bg);
+  background:radial-gradient(ellipse at 50% 40%,rgba(160,120,40,.08) 0%,transparent 70%),var(--bg);
   z-index:1000;
 }
 .login-card{
-  width:360px;padding:48px 40px;
+  width:380px;padding:52px 44px;
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:20px;
-  box-shadow:0 0 60px rgba(201,168,76,.08),0 24px 60px rgba(0,0,0,.6);
+  box-shadow:var(--shadow-lg),0 0 0 4px rgba(160,120,40,.04);
   text-align:center;
 }
-.login-logo{font-family:'Cinzel Decorative',serif;font-size:28px;color:var(--gold);letter-spacing:3px;text-shadow:0 0 30px var(--gold-glow);margin-bottom:4px;}
-.login-sub{font-size:11px;letter-spacing:3px;color:var(--text-dim);margin-bottom:36px;}
-.login-field{position:relative;margin-bottom:16px;}
+.login-card::before{
+  content:'';display:block;width:60px;height:3px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  margin:0 auto 28px;border-radius:2px;
+}
+.login-logo{font-family:'Cinzel Decorative',serif;font-size:30px;color:var(--gold);letter-spacing:4px;margin-bottom:4px;}
+.login-sub{font-size:10px;letter-spacing:4px;color:var(--text-muted);margin-bottom:36px;font-family:var(--mono);}
+.login-field{position:relative;margin-bottom:14px;}
 .login-field input{
-  width:100%;padding:14px 16px;
-  background:rgba(255,255,255,.04);
-  border:1px solid var(--border);
+  width:100%;padding:14px 18px;
+  background:var(--surface2);
+  border:1.5px solid var(--border);
   border-radius:var(--radius-sm);
   color:var(--text);font-family:var(--mono);font-size:14px;letter-spacing:2px;
   outline:none;transition:.2s;text-align:center;direction:ltr;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.05);
 }
-.login-field input:focus{border-color:var(--gold);background:rgba(201,168,76,.04);}
+.login-field input:focus{border-color:var(--gold);background:#fff;box-shadow:0 0 0 3px var(--gold-glow);}
 .login-field input::placeholder{letter-spacing:1px;color:var(--text-muted);font-size:12px;}
 .login-btn{
   width:100%;padding:14px;margin-top:8px;
-  background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.1));
-  border:1px solid var(--gold);border-radius:var(--radius-sm);
-  color:var(--gold-lt);font-family:var(--serif);font-size:14px;letter-spacing:2px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-lt));
+  border:none;border-radius:var(--radius-sm);
+  color:#fff;font-family:var(--serif);font-size:14px;letter-spacing:2px;
   cursor:pointer;transition:.2s;
+  box-shadow:0 4px 16px rgba(160,120,40,.3);
 }
-.login-btn:hover{background:linear-gradient(135deg,rgba(201,168,76,.35),rgba(201,168,76,.2));box-shadow:0 0 20px var(--gold-glow);}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(160,120,40,.4);}
+.login-btn:active{transform:translateY(0);}
 .login-err{color:var(--crimson-lt);font-size:12px;margin-top:10px;min-height:16px;}
 
 /* ── LAYOUT ── */
 #app{display:none;min-height:100vh;}
 .sidebar{
-  position:fixed;top:0;right:0;bottom:0;width:240px;
+  position:fixed;top:0;right:0;bottom:0;width:248px;
   background:var(--surface);
   border-left:1px solid var(--border);
   display:flex;flex-direction:column;
   z-index:100;
+  box-shadow:-4px 0 20px rgba(160,120,40,.08);
 }
 .sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid var(--border2);}
-.sidebar-logo .s-title{font-family:'Cinzel Decorative',serif;font-size:16px;color:var(--gold);letter-spacing:2px;}
-.sidebar-logo .s-sub{font-size:10px;color:var(--text-dim);letter-spacing:2px;margin-top:2px;}
-.nav{flex:1;padding:16px 0;overflow-y:auto;}
+.sidebar-logo .s-title{font-family:'Cinzel Decorative',serif;font-size:18px;color:var(--gold);letter-spacing:2px;}
+.sidebar-logo .s-sub{font-size:9px;color:var(--text-muted);letter-spacing:3px;margin-top:3px;font-family:var(--mono);}
+.nav{flex:1;padding:12px 0;overflow-y:auto;}
+.nav-section{padding:10px 24px 4px;font-size:9px;letter-spacing:2px;color:var(--text-muted);font-family:var(--mono);}
 .nav-item{
   display:flex;align-items:center;gap:12px;
-  padding:12px 24px;cursor:pointer;
+  padding:11px 24px;cursor:pointer;
   font-size:13px;color:var(--text-dim);
   transition:.15s;border-right:3px solid transparent;
   margin:1px 0;
 }
-.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03);}
-.nav-item.active{color:var(--gold);background:rgba(201,168,76,.06);border-right-color:var(--gold);}
-.nav-icon{font-size:16px;width:20px;text-align:center;}
+.nav-item:hover{color:var(--text);background:rgba(160,120,40,.05);}
+.nav-item.active{color:var(--gold);background:rgba(160,120,40,.08);border-right-color:var(--gold);}
+.nav-icon{font-size:15px;width:20px;text-align:center;}
 .sidebar-footer{padding:16px 24px;border-top:1px solid var(--border2);}
 .logout-btn{
-  width:100%;padding:10px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);
-  border-radius:var(--radius-sm);color:var(--crimson-lt);font-size:12px;cursor:pointer;
+  width:100%;padding:10px;
+  background:rgba(176,48,32,.06);border:1px solid rgba(176,48,32,.2);
+  border-radius:var(--radius-sm);color:var(--crimson);font-size:12px;cursor:pointer;
   transition:.15s;font-family:var(--sans);
 }
-.logout-btn:hover{background:rgba(231,76,60,.15);}
+.logout-btn:hover{background:rgba(176,48,32,.12);}
 
-.main{margin-right:240px;padding:32px;min-height:100vh;}
+.main{margin-right:248px;padding:32px;min-height:100vh;}
 .page{display:none;}
 .page.active{display:block;}
 
 /* ── HEADER ── */
-.page-header{margin-bottom:28px;}
+.page-header{margin-bottom:28px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;}
 .page-title{font-family:var(--serif);font-size:22px;color:var(--gold);letter-spacing:1px;}
-.page-sub{font-size:12px;color:var(--text-dim);margin-top:4px;}
+.page-sub{font-size:12px;color:var(--text-muted);margin-top:4px;}
 
 /* ── STATS CARDS ── */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:28px;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-bottom:28px;}
 .stat-card{
   background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);
   padding:20px 22px;position:relative;overflow:hidden;transition:.2s;
+  box-shadow:var(--shadow);
 }
-.stat-card:hover{border-color:var(--border);box-shadow:0 4px 20px rgba(0,0,0,.3);}
-.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--gold));opacity:.6;}
-.stat-icon{font-size:24px;margin-bottom:10px;}
-.stat-val{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--gold-lt);line-height:1;}
-.stat-lbl{font-size:11px;color:var(--text-dim);margin-top:6px;letter-spacing:.5px;}
+.stat-card:hover{border-color:var(--border);box-shadow:var(--shadow-lg);transform:translateY(-2px);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,var(--gold));opacity:.8;}
+.stat-icon{font-size:22px;margin-bottom:10px;}
+.stat-val{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--text);line-height:1;}
+.stat-lbl{font-size:11px;color:var(--text-muted);margin-top:6px;letter-spacing:.5px;}
 .stat-delta{font-size:10px;margin-top:4px;font-family:var(--mono);}
 .stat-delta.up{color:var(--emerald-lt);}
 .stat-delta.down{color:var(--crimson-lt);}
 
 /* ── TABLE ── */
-.table-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;}
+.table-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
 .table-header{
-  display:flex;align-items:center;justify-content:space-between;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
   padding:16px 20px;border-bottom:1px solid var(--border2);
+  background:var(--surface2);
 }
 .table-title{font-family:var(--serif);font-size:14px;color:var(--gold);}
 .search-inp{
-  padding:8px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border2);
+  padding:8px 14px;background:var(--surface);border:1.5px solid var(--border2);
   border-radius:var(--radius-sm);color:var(--text);font-size:12px;font-family:var(--mono);
   outline:none;width:200px;transition:.2s;
 }
-.search-inp:focus{border-color:var(--gold);width:250px;}
+.search-inp:focus{border-color:var(--gold);width:250px;box-shadow:0 0 0 3px var(--gold-glow);}
 table{width:100%;border-collapse:collapse;}
 thead th{
   padding:10px 16px;text-align:right;font-size:10px;letter-spacing:1px;
-  color:var(--text-dim);border-bottom:1px solid var(--border2);
-  font-family:var(--mono);font-weight:500;background:rgba(255,255,255,.02);
+  color:var(--text-muted);border-bottom:1px solid var(--border2);
+  font-family:var(--mono);font-weight:600;background:var(--surface2);
 }
-tbody tr{border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer;transition:.15s;}
-tbody tr:hover{background:rgba(201,168,76,.04);}
+tbody tr{border-bottom:1px solid rgba(160,120,40,.06);cursor:pointer;transition:.15s;}
+tbody tr:hover{background:rgba(160,120,40,.04);}
 tbody tr:last-child{border-bottom:none;}
 td{padding:12px 16px;font-size:12px;}
-.td-id{font-family:var(--mono);font-size:10px;color:var(--text-dim);}
+.td-id{font-family:var(--mono);font-size:10px;color:var(--text-muted);}
 .td-name{font-weight:500;color:var(--text);}
 .td-num{font-family:var(--mono);color:var(--gold);}
 .td-time{font-family:var(--mono);font-size:11px;color:var(--text-dim);}
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-family:var(--mono);}
-.badge-online{background:rgba(46,204,113,.12);color:var(--emerald-lt);border:1px solid rgba(46,204,113,.2);}
-.badge-mobile{background:rgba(52,152,219,.1);color:var(--sapphire-lt);border:1px solid rgba(52,152,219,.2);}
-.badge-desktop{background:rgba(201,168,76,.08);color:var(--gold);border:1px solid rgba(201,168,76,.15);}
-.badge-banned{background:rgba(231,76,60,.1);color:var(--crimson-lt);border:1px solid rgba(231,76,60,.2);}
+.badge-online{background:rgba(40,160,90,.1);color:var(--emerald-lt);border:1px solid rgba(40,160,90,.25);}
+.badge-mobile{background:rgba(42,90,204,.08);color:var(--sapphire-lt);border:1px solid rgba(42,90,204,.2);}
+.badge-desktop{background:rgba(160,120,40,.08);color:var(--gold);border:1px solid rgba(160,120,40,.2);}
+.badge-banned{background:rgba(176,48,32,.08);color:var(--crimson-lt);border:1px solid rgba(176,48,32,.2);}
 
-/* ── CHART ── */
+/* ── CHARTS ── */
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
-.chart-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:20px;}
+.chart-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
 .chart-title{font-family:var(--serif);font-size:13px;color:var(--gold);margin-bottom:16px;}
-canvas{width:100%!important;}
 
 /* ── PLAYER DETAIL ── */
 .detail-back{
   display:inline-flex;align-items:center;gap:8px;
-  color:var(--text-dim);font-size:12px;cursor:pointer;margin-bottom:20px;
-  transition:.15s;
+  color:var(--text-muted);font-size:12px;cursor:pointer;margin-bottom:20px;
+  transition:.15s;padding:6px 12px;border-radius:var(--radius-sm);
+  border:1px solid var(--border2);background:var(--surface);
 }
-.detail-back:hover{color:var(--gold);}
+.detail-back:hover{color:var(--gold);border-color:var(--border);}
 .detail-grid{display:grid;grid-template-columns:280px 1fr;gap:20px;}
-.detail-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:24px;}
+.detail-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);}
 .player-av{font-size:56px;text-align:center;margin-bottom:12px;}
 .player-name-big{font-family:var(--serif);font-size:20px;color:var(--gold);text-align:center;}
 .player-id-small{font-family:var(--mono);font-size:10px;color:var(--text-muted);text-align:center;margin-top:4px;}
@@ -181,75 +204,95 @@ canvas{width:100%!important;}
   padding:10px 14px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;
   border:1px solid;transition:.15s;font-family:var(--sans);width:100%;text-align:center;
 }
-.action-btn.warn{background:rgba(231,76,60,.08);border-color:rgba(231,76,60,.25);color:var(--crimson-lt);}
-.action-btn.warn:hover{background:rgba(231,76,60,.18);}
-.action-btn.info{background:rgba(52,152,219,.08);border-color:rgba(52,152,219,.25);color:var(--sapphire-lt);}
-.action-btn.info:hover{background:rgba(52,152,219,.18);}
+.action-btn.warn{background:rgba(176,48,32,.06);border-color:rgba(176,48,32,.2);color:var(--crimson);}
+.action-btn.warn:hover{background:rgba(176,48,32,.14);}
+.action-btn.info{background:rgba(42,90,204,.06);border-color:rgba(42,90,204,.2);color:var(--sapphire-lt);}
+.action-btn.info:hover{background:rgba(42,90,204,.14);}
+.action-btn.success{background:rgba(40,160,90,.06);border-color:rgba(40,160,90,.2);color:var(--emerald);}
+.action-btn.success:hover{background:rgba(40,160,90,.14);}
 .info-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2);font-size:12px;}
 .info-row:last-child{border-bottom:none;}
-.info-key{color:var(--text-dim);}
+.info-key{color:var(--text-muted);}
 .info-val{font-family:var(--mono);color:var(--text);}
 
 /* ── TOOLS PAGE ── */
 .tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
-.tool-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:24px;}
-.tool-title{font-family:var(--serif);font-size:14px;color:var(--gold);margin-bottom:16px;}
+.tool-card{
+  background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);
+  padding:24px;box-shadow:var(--shadow);
+}
+.tool-card:hover{border-color:var(--border);}
+.tool-title{font-family:var(--serif);font-size:14px;color:var(--gold);margin-bottom:4px;}
+.tool-desc{font-size:11px;color:var(--text-muted);margin-bottom:16px;}
 .tool-input{
-  width:100%;padding:12px 14px;background:rgba(255,255,255,.04);
-  border:1px solid var(--border2);border-radius:var(--radius-sm);
+  width:100%;padding:11px 14px;
+  background:var(--surface2);
+  border:1.5px solid var(--border2);border-radius:var(--radius-sm);
   color:var(--text);font-size:13px;font-family:var(--sans);outline:none;
   margin-bottom:10px;transition:.2s;
 }
-.tool-input:focus{border-color:var(--gold);}
-textarea.tool-input{resize:vertical;min-height:100px;}
+.tool-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow);background:#fff;}
+textarea.tool-input{resize:vertical;min-height:90px;}
 .tool-btn{
-  padding:10px 20px;border-radius:var(--radius-sm);font-size:13px;cursor:pointer;
-  border:1px solid;transition:.15s;font-family:var(--sans);
+  padding:10px 18px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;
+  border:1.5px solid;transition:.2s;font-family:var(--sans);
 }
-.tool-btn.gold{background:rgba(201,168,76,.12);border-color:var(--gold);color:var(--gold-lt);}
-.tool-btn.gold:hover{background:rgba(201,168,76,.22);box-shadow:0 0 12px var(--gold-glow);}
-.tool-btn.red{background:rgba(231,76,60,.1);border-color:rgba(231,76,60,.3);color:var(--crimson-lt);}
-.tool-btn.red:hover{background:rgba(231,76,60,.2);}
-.tool-msg{font-size:12px;margin-top:10px;color:var(--emerald-lt);min-height:18px;font-family:var(--mono);}
+.tool-btn.gold{
+  background:linear-gradient(135deg,var(--gold),var(--gold-lt));
+  border-color:transparent;color:#fff;
+  box-shadow:0 2px 8px rgba(160,120,40,.25);
+}
+.tool-btn.gold:hover{box-shadow:0 4px 16px rgba(160,120,40,.35);transform:translateY(-1px);}
+.tool-btn.red{background:rgba(176,48,32,.08);border-color:rgba(176,48,32,.25);color:var(--crimson);}
+.tool-btn.red:hover{background:rgba(176,48,32,.16);}
+.tool-btn.blue{background:rgba(42,90,204,.08);border-color:rgba(42,90,204,.25);color:var(--sapphire-lt);}
+.tool-btn.blue:hover{background:rgba(42,90,204,.16);}
+.tool-btn.green{background:rgba(40,160,90,.08);border-color:rgba(40,160,90,.25);color:var(--emerald);}
+.tool-btn.green:hover{background:rgba(40,160,90,.16);}
+.tool-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;}
+.tool-msg{font-size:12px;margin-top:10px;min-height:18px;font-family:var(--mono);}
+.tool-msg.success{color:var(--emerald-lt);}
+.tool-msg.error{color:var(--crimson-lt);}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
 
 /* ── NOTIFICATION ── */
 .notif{
   position:fixed;bottom:24px;left:24px;z-index:9999;
-  background:var(--surface2);border:1px solid var(--border);
+  background:var(--surface);border:1.5px solid var(--border);
   border-radius:var(--radius-sm);padding:14px 20px;
   font-size:13px;color:var(--text);
-  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  box-shadow:var(--shadow-lg);
   transform:translateY(80px);opacity:0;transition:.3s;pointer-events:none;
 }
 .notif.show{transform:translateY(0);opacity:1;}
-.notif.success{border-color:rgba(46,204,113,.3);color:var(--emerald-lt);}
-.notif.error{border-color:rgba(231,76,60,.3);color:var(--crimson-lt);}
+.notif.success{border-color:rgba(40,160,90,.4);color:var(--emerald);}
+.notif.error{border-color:rgba(176,48,32,.4);color:var(--crimson);}
 
 /* ── ACTIVITY ── */
-.activity-list{display:flex;flex-direction:column;gap:0;}
+.activity-list{display:flex;flex-direction:column;}
 .activity-item{
   display:flex;align-items:flex-start;gap:14px;
-  padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.03);
+  padding:12px 20px;border-bottom:1px solid rgba(160,120,40,.06);
   font-size:12px;transition:.15s;
 }
-.activity-item:hover{background:rgba(255,255,255,.02);}
+.activity-item:hover{background:rgba(160,120,40,.03);}
 .activity-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px;}
 .activity-body{flex:1;}
 .activity-text{color:var(--text);}
 .activity-time{color:var(--text-muted);font-family:var(--mono);font-size:10px;margin-top:3px;}
 
 /* ── LOADING ── */
-.loading{text-align:center;padding:60px;color:var(--text-dim);font-family:var(--mono);font-size:12px;}
-.spinner-small{display:inline-block;width:16px;height:16px;border:2px solid rgba(201,168,76,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-left:8px;}
+.loading{text-align:center;padding:60px;color:var(--text-muted);font-family:var(--mono);font-size:12px;}
+.spinner-small{display:inline-block;width:14px;height:14px;border:2px solid rgba(160,120,40,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── MODAL ── */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:center;justify-content:center;}
+.overlay{position:fixed;inset:0;background:rgba(40,30,10,.4);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;}
 .overlay.open{display:flex;}
 .modal-box{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:28px;width:400px;max-width:90vw;
-  box-shadow:0 24px 60px rgba(0,0,0,.6);
+  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);
+  padding:28px;width:420px;max-width:90vw;
+  box-shadow:var(--shadow-lg);
 }
 .modal-title{font-family:var(--serif);font-size:16px;color:var(--gold);margin-bottom:16px;}
 .modal-body{font-size:13px;color:var(--text-dim);margin-bottom:20px;line-height:1.7;}
@@ -258,28 +301,84 @@ textarea.tool-input{resize:vertical;min-height:100px;}
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:rgba(201,168,76,.2);border-radius:3px;}
+::-webkit-scrollbar-thumb{background:rgba(160,120,40,.2);border-radius:3px;}
 
-/* ── LIVE INDICATOR ── */
+/* ── LIVE DOT ── */
 .live-dot{display:inline-block;width:7px;height:7px;background:var(--emerald-lt);border-radius:50%;margin-left:6px;animation:pulse-dot 2s ease-in-out infinite;}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
 
-/* bar chart */
-.bar-chart{display:flex;align-items:flex-end;gap:6px;height:120px;padding-bottom:4px;}
-.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;}
-.bar{width:100%;border-radius:3px 3px 0 0;background:linear-gradient(to top,rgba(201,168,76,.4),rgba(201,168,76,.8));transition:height .5s ease;min-height:2px;position:relative;}
-.bar:hover{background:linear-gradient(to top,rgba(201,168,76,.6),var(--gold-lt));}
+/* ── BAR CHART ── */
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:120px;padding-bottom:4px;}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;}
+.bar{
+  width:100%;border-radius:4px 4px 0 0;
+  background:linear-gradient(to top,rgba(160,120,40,.4),rgba(160,120,40,.85));
+  transition:height .5s ease;min-height:2px;
+}
+.bar:hover{background:linear-gradient(to top,var(--gold),var(--gold-lt));}
 .bar-lbl{font-family:var(--mono);font-size:9px;color:var(--text-muted);white-space:nowrap;}
 .bar-val{font-family:var(--mono);font-size:9px;color:var(--gold);}
 
-/* line chart */
-.line-chart-wrap{position:relative;height:120px;}
-svg.line-chart{width:100%;height:120px;}
+/* ── ANNOUNCEMENT PREVIEW ── */
+.ann-preview{
+  background:linear-gradient(135deg,rgba(160,120,40,.08),rgba(160,120,40,.04));
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:14px;margin-top:10px;font-size:12px;
+}
+.ann-preview-title{font-weight:600;color:var(--gold);margin-bottom:4px;}
+.ann-preview-body{color:var(--text-dim);line-height:1.6;}
 
-/* empty state */
-.empty{text-align:center;padding:48px 20px;color:var(--text-dim);}
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 20px;color:var(--text-muted);}
 .empty-icon{font-size:40px;margin-bottom:12px;}
 .empty-text{font-size:13px;}
+
+/* ── SECTION DIVIDER ── */
+.section-divider{
+  display:flex;align-items:center;gap:12px;
+  margin:24px 0 16px;
+}
+.section-divider::before,.section-divider::after{
+  content:'';flex:1;height:1px;background:var(--border2);
+}
+.section-divider span{font-family:var(--mono);font-size:10px;color:var(--text-muted);letter-spacing:2px;white-space:nowrap;}
+
+/* ── TAG INPUT ── */
+.select-input{
+  width:100%;padding:11px 14px;
+  background:var(--surface2);
+  border:1.5px solid var(--border2);border-radius:var(--radius-sm);
+  color:var(--text);font-size:13px;font-family:var(--sans);outline:none;
+  margin-bottom:10px;cursor:pointer;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a07828' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:left 12px center;
+}
+.select-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow);}
+
+/* ── RANGE INPUT ── */
+.range-wrap{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.range-wrap input[type=range]{flex:1;accent-color:var(--gold);}
+.range-val{font-family:var(--mono);font-size:12px;color:var(--gold);min-width:36px;text-align:center;}
+
+/* ── STATUS BANNER ── */
+.status-banner{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px;border-radius:var(--radius-sm);
+  font-size:12px;margin-bottom:10px;
+}
+.status-banner.info{background:rgba(42,90,204,.06);border:1px solid rgba(42,90,204,.2);color:var(--sapphire-lt);}
+.status-banner.warn{background:rgba(176,48,32,.06);border:1px solid rgba(176,48,32,.2);color:var(--crimson);}
+.status-banner.ok{background:rgba(40,160,90,.06);border:1px solid rgba(40,160,90,.2);color:var(--emerald);}
+
+/* ── COINS / REWARDS SECTION ── */
+.reward-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.reward-btn{
+  padding:8px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);
+  background:var(--surface2);font-size:12px;cursor:pointer;transition:.15s;text-align:center;
+}
+.reward-btn:hover{border-color:var(--gold);color:var(--gold);}
+.reward-btn.active{border-color:var(--gold);background:rgba(160,120,40,.08);color:var(--gold);}
 </style>
 </head>
 <body>
@@ -292,7 +391,7 @@ svg.line-chart{width:100%;height:120px;}
     <div class="login-field">
       <input type="password" id="pw-input" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-    <button class="login-btn" onclick="doLogin()">دخول</button>
+    <button class="login-btn" onclick="doLogin()">دخول ← </button>
     <div class="login-err" id="login-err"></div>
   </div>
 </div>
@@ -306,11 +405,17 @@ svg.line-chart{width:100%;height:120px;}
       <div class="s-sub">ADMIN PANEL</div>
     </div>
     <nav class="nav">
+      <div class="nav-section">الرئيسية</div>
       <div class="nav-item active" onclick="showPage('overview')"><span class="nav-icon">📊</span> نظرة عامة</div>
       <div class="nav-item" onclick="showPage('players')"><span class="nav-icon">👥</span> اللاعبون</div>
       <div class="nav-item" onclick="showPage('charts')"><span class="nav-icon">📈</span> الرسوم البيانية</div>
+      <div class="nav-section">الإدارة</div>
       <div class="nav-item" onclick="showPage('tools')"><span class="nav-icon">🛠️</span> أدوات المطور</div>
+      <div class="nav-item" onclick="showPage('broadcast')"><span class="nav-icon">📢</span> البث والإعلانات</div>
+      <div class="nav-item" onclick="showPage('moderation')"><span class="nav-icon">🛡️</span> الإشراف</div>
+      <div class="nav-section">النظام</div>
       <div class="nav-item" onclick="showPage('activity')"><span class="nav-icon">📜</span> سجل النشاط</div>
+      <div class="nav-item" onclick="showPage('settings')"><span class="nav-icon">⚙️</span> الإعدادات</div>
     </nav>
     <div class="sidebar-footer">
       <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;font-family:var(--mono);">
@@ -326,11 +431,14 @@ svg.line-chart{width:100%;height:120px;}
     <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
       <div class="page-header">
-        <div class="page-title">نظرة عامة <span class="live-dot"></span></div>
-        <div class="page-sub">آخر تحديث: <span id="last-refresh">—</span></div>
+        <div>
+          <div class="page-title">نظرة عامة <span class="live-dot"></span></div>
+          <div class="page-sub">آخر تحديث: <span id="last-refresh">—</span></div>
+        </div>
+        <button class="tool-btn gold" onclick="initDashboard()" style="padding:8px 16px;font-size:11px;">↻ تحديث</button>
       </div>
       <div class="stats-grid" id="stats-grid">
-        <div class="loading">جارٍ التحميل <span class="spinner-small"></span></div>
+        <div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>
       </div>
       <div class="charts-grid">
         <div class="chart-card">
@@ -338,7 +446,7 @@ svg.line-chart{width:100%;height:120px;}
           <div class="bar-chart" id="bar-weekly"></div>
         </div>
         <div class="chart-card">
-          <div class="chart-title">📅 اللاعبون — آخر 24 ساعة</div>
+          <div class="chart-title">⏱ النشاط — آخر 24 ساعة</div>
           <div class="bar-chart" id="bar-daily"></div>
         </div>
       </div>
@@ -347,16 +455,30 @@ svg.line-chart{width:100%;height:120px;}
     <!-- PLAYERS -->
     <div class="page" id="page-players">
       <div class="page-header">
-        <div class="page-title">اللاعبون</div>
-        <div class="page-sub">قائمة جميع اللاعبين المسجلين</div>
+        <div>
+          <div class="page-title">اللاعبون</div>
+          <div class="page-sub">قائمة جميع اللاعبين المسجلين</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <select class="search-inp" id="filter-device" onchange="filterPlayers()" style="width:120px;">
+            <option value="">كل الأجهزة</option>
+            <option value="mobile">📱 جوال</option>
+            <option value="desktop">💻 كمبيوتر</option>
+          </select>
+          <select class="search-inp" id="filter-status" onchange="filterPlayers()" style="width:120px;">
+            <option value="">كل الحالات</option>
+            <option value="online">🟢 متصل</option>
+            <option value="banned">🚫 محظور</option>
+          </select>
+        </div>
       </div>
       <div class="table-wrap">
         <div class="table-header">
-          <div class="table-title">اللاعبون <span id="players-count" style="font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-right:8px;"></span></div>
-          <input class="search-inp" id="player-search" placeholder="ابحث عن لاعب..." oninput="filterPlayers()">
+          <div class="table-title">اللاعبون <span id="players-count" style="font-family:var(--mono);font-size:11px;color:var(--text-muted);margin-right:8px;"></span></div>
+          <input class="search-inp" id="player-search" placeholder="🔍 ابحث عن لاعب..." oninput="filterPlayers()">
         </div>
         <div id="players-table-wrap">
-          <div class="loading">جارٍ التحميل <span class="spinner-small"></span></div>
+          <div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>
         </div>
       </div>
     </div>
@@ -370,12 +492,14 @@ svg.line-chart{width:100%;height:120px;}
     <!-- CHARTS -->
     <div class="page" id="page-charts">
       <div class="page-header">
-        <div class="page-title">الرسوم البيانية</div>
-        <div class="page-sub">تحليل بيانات اللاعبين بمرور الوقت</div>
+        <div>
+          <div class="page-title">الرسوم البيانية</div>
+          <div class="page-sub">تحليل بيانات اللاعبين بمرور الوقت</div>
+        </div>
       </div>
       <div class="charts-grid">
         <div class="chart-card" style="grid-column:span 2">
-          <div class="chart-title">📈 اللاعبون الفريدون — آخر 30 يوم</div>
+          <div class="chart-title">📈 اللاعبون النشطون — آخر 30 يوم</div>
           <div style="height:180px" id="chart-30d"></div>
         </div>
         <div class="chart-card">
@@ -392,40 +516,166 @@ svg.line-chart{width:100%;height:120px;}
     <!-- TOOLS -->
     <div class="page" id="page-tools">
       <div class="page-header">
-        <div class="page-title">أدوات المطور</div>
-        <div class="page-sub">إدارة اللاعبين والإعلانات</div>
+        <div>
+          <div class="page-title">أدوات المطور</div>
+          <div class="page-sub">إدارة اللاعبين — بحث، حظر، حذف</div>
+        </div>
       </div>
       <div class="tools-grid">
         <!-- بحث -->
         <div class="tool-card">
           <div class="tool-title">🔍 البحث عن لاعب</div>
+          <div class="tool-desc">ابحث بالاسم أو بـ Player ID</div>
           <input class="tool-input" id="tool-search" placeholder="اسم اللاعب أو ID">
-          <button class="tool-btn gold" onclick="toolSearch()">بحث</button>
+          <div class="btn-row">
+            <button class="tool-btn gold" onclick="toolSearch()">بحث</button>
+            <button class="tool-btn blue" onclick="copyResults()">📋 نسخ النتائج</button>
+          </div>
           <div class="tool-msg" id="tool-search-msg"></div>
           <div id="tool-search-results" style="margin-top:12px;"></div>
         </div>
-        <!-- إعلان -->
+
+        <!-- إضافة عملات / تعديل -->
         <div class="tool-card">
-          <div class="tool-title">📢 إرسال إعلان لجميع اللاعبين</div>
-          <input class="tool-input" id="ann-title" placeholder="عنوان الإعلان">
-          <textarea class="tool-input" id="ann-body" placeholder="نص الإعلان..."></textarea>
-          <button class="tool-btn gold" onclick="sendAnnouncement()">إرسال</button>
-          <div class="tool-msg" id="ann-msg"></div>
+          <div class="tool-title">🎁 منح مكافأة للاعب</div>
+          <div class="tool-desc">أضف عملات أو أنهِ جلسة اللاعب</div>
+          <input class="tool-input" id="reward-id" placeholder="Player ID">
+          <div class="reward-grid">
+            <div class="reward-btn" onclick="selectReward(this,'coins_100')">+100 عملة</div>
+            <div class="reward-btn" onclick="selectReward(this,'coins_500')">+500 عملة</div>
+            <div class="reward-btn" onclick="selectReward(this,'vip_1d')">VIP يوم</div>
+            <div class="reward-btn" onclick="selectReward(this,'reset_stats')">إعادة إحصائيات</div>
+          </div>
+          <div class="btn-row">
+            <button class="tool-btn green" onclick="grantReward()">منح</button>
+          </div>
+          <div class="tool-msg" id="reward-msg"></div>
         </div>
+
         <!-- حظر -->
         <div class="tool-card">
           <div class="tool-title">🚫 حظر لاعب</div>
+          <div class="tool-desc">حظر مؤقت أو دائم مع تحديد السبب</div>
           <input class="tool-input" id="ban-id" placeholder="Player ID">
-          <input class="tool-input" id="ban-reason" placeholder="سبب الحظر">
-          <button class="tool-btn red" onclick="toolBan()">حظر</button>
+          <select class="select-input" id="ban-reason-type">
+            <option value="">— سبب الحظر —</option>
+            <option value="غش في اللعبة">🎮 غش في اللعبة</option>
+            <option value="لغة مسيئة">💬 لغة مسيئة</option>
+            <option value="إزعاج اللاعبين">😤 إزعاج اللاعبين</option>
+            <option value="اختراق">⚠️ اختراق</option>
+            <option value="آخر">📌 آخر</option>
+          </select>
+          <input class="tool-input" id="ban-reason" placeholder="تفاصيل إضافية (اختياري)">
+          <div class="btn-row">
+            <button class="tool-btn red" onclick="toolBan()">🚫 حظر</button>
+            <button class="tool-btn blue" onclick="toolUnban()">🔓 رفع حظر</button>
+          </div>
           <div class="tool-msg" id="ban-msg"></div>
         </div>
+
         <!-- حذف -->
         <div class="tool-card">
-          <div class="tool-title">🗑️ حذف بيانات لاعب</div>
+          <div class="tool-title">🗑️ حذف / تصدير بيانات</div>
+          <div class="tool-desc">حذف بيانات لاعب أو تصدير معلوماته</div>
           <input class="tool-input" id="del-id" placeholder="Player ID">
-          <button class="tool-btn red" onclick="toolDelete()">حذف البيانات</button>
+          <div class="btn-row">
+            <button class="tool-btn red" onclick="toolDelete()">🗑️ حذف</button>
+            <button class="tool-btn blue" onclick="exportPlayer()">📤 تصدير JSON</button>
+          </div>
           <div class="tool-msg" id="del-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BROADCAST -->
+    <div class="page" id="page-broadcast">
+      <div class="page-header">
+        <div>
+          <div class="page-title">البث والإعلانات</div>
+          <div class="page-sub">إرسال رسائل وإعلانات للاعبين</div>
+        </div>
+      </div>
+      <div class="tools-grid">
+        <!-- إعلان عام -->
+        <div class="tool-card" style="grid-column:span 2">
+          <div class="tool-title">📢 إعلان عام لجميع اللاعبين</div>
+          <div class="tool-desc">سيظهر الإعلان عند فتح اللعبة لجميع اللاعبين النشطين</div>
+          <div id="ann-status-check" class="status-banner info">⏳ جارٍ التحقق من الإعلان الحالي...</div>
+          <input class="tool-input" id="ann-title" placeholder="عنوان الإعلان (مثال: تحديث جديد!)">
+          <textarea class="tool-input" id="ann-body" placeholder="نص الإعلان... (مثال: أضفنا ميزة جديدة رائعة!)" oninput="previewAnn()"></textarea>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">المعاينة:</div>
+          <div class="ann-preview" id="ann-preview">
+            <div class="ann-preview-title" id="ann-prev-title">العنوان سيظهر هنا</div>
+            <div class="ann-preview-body" id="ann-prev-body">نص الإعلان سيظهر هنا...</div>
+          </div>
+          <div class="btn-row" style="margin-top:12px;">
+            <button class="tool-btn gold" onclick="sendAnnouncement()">📤 إرسال الإعلان</button>
+            <button class="tool-btn red" onclick="clearAnnouncement()">🗑️ حذف الإعلان الحالي</button>
+            <button class="tool-btn blue" onclick="checkCurrentAnn()">🔄 تحقق من الحالي</button>
+          </div>
+          <div class="tool-msg" id="ann-msg"></div>
+        </div>
+
+        <!-- رسالة لغرفة معينة -->
+        <div class="tool-card">
+          <div class="tool-title">🎯 رسالة لغرفة محددة</div>
+          <div class="tool-desc">أرسل رسالة نظام لغرفة بعينها</div>
+          <input class="tool-input" id="room-id-msg" placeholder="Room ID">
+          <textarea class="tool-input" id="room-msg-body" placeholder="نص الرسالة..." style="min-height:70px;"></textarea>
+          <div class="btn-row">
+            <button class="tool-btn gold" onclick="sendRoomMsg()">إرسال</button>
+          </div>
+          <div class="tool-msg" id="room-msg-status"></div>
+        </div>
+
+        <!-- إشعار مخصص -->
+        <div class="tool-card">
+          <div class="tool-title">🔔 إشعار لفئة من اللاعبين</div>
+          <div class="tool-desc">أرسل إشعار لمجموعة مختارة</div>
+          <select class="select-input" id="notif-target">
+            <option value="all">الكل</option>
+            <option value="online">المتصلون حالياً</option>
+            <option value="mobile">مستخدمو الجوال</option>
+            <option value="desktop">مستخدمو الكمبيوتر</option>
+          </select>
+          <input class="tool-input" id="notif-msg" placeholder="نص الإشعار">
+          <div class="btn-row">
+            <button class="tool-btn gold" onclick="sendTargetedNotif()">إرسال</button>
+          </div>
+          <div class="tool-msg" id="notif-target-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODERATION -->
+    <div class="page" id="page-moderation">
+      <div class="page-header">
+        <div>
+          <div class="page-title">الإشراف</div>
+          <div class="page-sub">إدارة المحظورين ومراقبة المشكلات</div>
+        </div>
+      </div>
+      <div class="charts-grid">
+        <!-- المحظورون -->
+        <div class="chart-card" style="grid-column:span 2">
+          <div class="chart-title" style="margin-bottom:12px;">🚫 قائمة المحظورين <span id="banned-count" style="font-family:var(--mono);font-size:11px;color:var(--text-muted);"></span></div>
+          <div id="banned-list">
+            <div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>
+          </div>
+        </div>
+        <!-- إحصائيات الإشراف -->
+        <div class="chart-card">
+          <div class="chart-title">📊 إحصائيات الإشراف</div>
+          <div id="mod-stats">
+            <div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>
+          </div>
+        </div>
+        <!-- تقارير اللاعبين -->
+        <div class="chart-card">
+          <div class="chart-title">🚩 التقارير والشكاوى</div>
+          <div id="reports-list">
+            <div class="empty"><div class="empty-icon">🚩</div><div class="empty-text" style="font-size:12px;">لا توجد شكاوى</div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -433,16 +683,90 @@ svg.line-chart{width:100%;height:120px;}
     <!-- ACTIVITY -->
     <div class="page" id="page-activity">
       <div class="page-header">
-        <div class="page-title">سجل النشاط</div>
-        <div class="page-sub">آخر الأحداث في اللعبة</div>
+        <div>
+          <div class="page-title">سجل النشاط</div>
+          <div class="page-sub">آخر الأحداث في اللعبة</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <select class="search-inp" id="activity-filter" onchange="loadActivity()" style="width:140px;">
+            <option value="">كل الأحداث</option>
+            <option value="join">🟢 انضمام</option>
+            <option value="leave">🔴 مغادرة</option>
+            <option value="ban">🚫 حظر</option>
+            <option value="announce">📢 إعلان</option>
+            <option value="game">🎮 لعبة</option>
+          </select>
+          <button class="tool-btn gold" style="padding:7px 14px;font-size:11px;" onclick="loadActivity()">↻ تحديث</button>
+        </div>
       </div>
       <div class="table-wrap">
         <div class="table-header">
           <div class="table-title">الأحداث الأخيرة</div>
-          <button class="tool-btn gold" style="padding:7px 14px;font-size:11px;" onclick="loadActivity()">تحديث</button>
+          <button class="tool-btn red" style="padding:7px 14px;font-size:11px;" onclick="clearActivityLog()">🗑️ مسح السجل</button>
         </div>
         <div class="activity-list" id="activity-list">
-          <div class="loading">جارٍ التحميل <span class="spinner-small"></span></div>
+          <div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div>
+          <div class="page-title">الإعدادات</div>
+          <div class="page-sub">إعدادات اللعبة والنظام</div>
+        </div>
+      </div>
+      <div class="tools-grid">
+        <div class="tool-card">
+          <div class="tool-title">🎮 إعدادات اللعبة</div>
+          <div class="tool-desc">التحكم في معاملات اللعبة</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">الحد الأقصى للاعبين في الغرفة</div>
+          <div class="range-wrap">
+            <input type="range" min="2" max="10" value="6" id="max-players-range" oninput="document.getElementById('max-players-val').textContent=this.value">
+            <span class="range-val" id="max-players-val">6</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">مهلة الغرفة (بالدقائق)</div>
+          <div class="range-wrap">
+            <input type="range" min="5" max="60" value="30" id="room-timeout-range" oninput="document.getElementById('room-timeout-val').textContent=this.value+'د'">
+            <span class="range-val" id="room-timeout-val">30د</span>
+          </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="tool-btn gold" onclick="saveGameSettings()">💾 حفظ</button>
+          </div>
+          <div class="tool-msg" id="settings-msg"></div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-title">🔒 إعدادات الأمان</div>
+          <div class="tool-desc">إدارة الوصول والأمان</div>
+          <input class="tool-input" id="new-password" type="password" placeholder="كلمة مرور جديدة للأدمن">
+          <input class="tool-input" id="confirm-password" type="password" placeholder="تأكيد كلمة المرور">
+          <div class="btn-row">
+            <button class="tool-btn red" onclick="changeAdminPass()">🔑 تغيير كلمة المرور</button>
+          </div>
+          <div class="tool-msg" id="pass-msg"></div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-title">🗃️ قاعدة البيانات</div>
+          <div class="tool-desc">عمليات الصيانة</div>
+          <div class="btn-row">
+            <button class="tool-btn blue" onclick="exportAllPlayers()">📤 تصدير كل اللاعبين</button>
+          </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="tool-btn red" onclick="purgeOldActivity()">🧹 حذف سجلات قديمة (+30 يوم)</button>
+          </div>
+          <div class="tool-msg" id="db-msg"></div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-title">ℹ️ معلومات النظام</div>
+          <div class="tool-desc">حالة Firebase والنظام</div>
+          <div id="sys-info">
+            <div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>
+          </div>
         </div>
       </div>
     </div>
@@ -463,8 +787,8 @@ svg.line-chart{width:100%;height:120px;}
 <div class="notif" id="notif"></div>
 
 <script type="module">
-import { initializeApp }                                     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, get, set, update, remove, push, onValue, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, get, set, update, remove, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const FB = {
   apiKey:"AIzaSyCaQdotTFYyT0QQWgCv2_Li2OGnxOQmmB8",
@@ -479,9 +803,10 @@ const app = initializeApp(FB);
 const db  = getDatabase(app);
 const r   = path => ref(db, path);
 
-// ── كلمة المرور (غيّرها لكلمة مرور قوية) ──
-const ADMIN_PASS = "TurkiAdmin2026#";
-const SESSION_KEY = "coup_admin_auth";
+const ADMIN_PASS_KEY = "coup_admin_pass_hash";
+const SESSION_KEY    = "coup_admin_auth";
+let ADMIN_PASS = localStorage.getItem(ADMIN_PASS_KEY) || "TurkiAdmin2026#";
+let _selectedReward = '';
 
 // ── AUTH ──
 window.doLogin = function(){
@@ -497,24 +822,20 @@ window.doLogin = function(){
     setTimeout(()=>err.textContent='', 3000);
   }
 };
-
 window.doLogout = function(){
   sessionStorage.removeItem(SESSION_KEY);
   location.reload();
 };
-
-// تحقق من الجلسة
 if(sessionStorage.getItem(SESSION_KEY)){
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   initDashboard();
 }
 
-// ── ساعة ──
+// ── CLOCK ──
 function updateClock(){
-  const now = new Date();
   document.getElementById('sidebar-time').textContent =
-    now.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});
+    new Date().toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});
 }
 setInterval(updateClock, 1000); updateClock();
 
@@ -533,23 +854,24 @@ window.showPage = function(id){
   if(id==='players') renderPlayersTable(_allPlayers);
   if(id==='charts') renderCharts();
   if(id==='activity') loadActivity();
+  if(id==='moderation') loadModeration();
+  if(id==='broadcast') checkCurrentAnn();
+  if(id==='settings') loadSysInfo();
 };
 
 // ── INIT ──
-async function initDashboard(){
+window.initDashboard = async function(){
   await loadAllPlayers();
   renderOverview();
   setInterval(()=>{ loadAllPlayers().then(()=>{ if(_currentPage==='overview') renderOverview(); }); }, 30000);
-}
+};
 
-// ── LOAD DATA ──
 async function loadAllPlayers(){
   try{
     const snap = await get(r('admin/players'));
     if(snap.exists()){
       _allPlayers = Object.values(snap.val()).sort((a,b)=>b.lastSeen-a.lastSeen);
     }
-    // أيضاً اقرأ rooms لتحديث الغرف الحالية
     return _allPlayers;
   }catch(e){ return []; }
 }
@@ -568,68 +890,63 @@ async function renderOverview(){
   const now = Date.now();
   const today = new Date(); today.setHours(0,0,0,0);
   const todayTs = today.getTime();
-  const weekTs = todayTs - 6*86400000;
-
-  const total = _allPlayers.length;
+  const weekTs  = todayTs - 6*86400000;
+  const total   = _allPlayers.length;
   const todayCount = _allPlayers.filter(p=>p.firstSeen>=todayTs).length;
   const weekCount  = _allPlayers.filter(p=>p.firstSeen>=weekTs).length;
   const onlineCount = _allPlayers.filter(p=>(now-p.lastSeen)<120000).length;
   const totalSessions = _allPlayers.reduce((s,p)=>s+(p.sessions||0),0);
   const avgPlay = _allPlayers.length ? Math.round(_allPlayers.reduce((s,p)=>s+(p.totalPlayMs||0),0)/_allPlayers.length/60000) : 0;
   const activeRooms = await getActiveRooms();
+  const bannedCount = _allPlayers.filter(p=>p.banned).length;
+  const mobileCount = _allPlayers.filter(p=>p.device==='mobile').length;
 
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card" style="--accent:var(--gold)">
-      <div class="stat-icon">👥</div>
-      <div class="stat-val">${total}</div>
+      <div class="stat-icon">👥</div><div class="stat-val">${total}</div>
       <div class="stat-lbl">إجمالي اللاعبين</div>
     </div>
     <div class="stat-card" style="--accent:var(--emerald-lt)">
-      <div class="stat-icon">🟢</div>
-      <div class="stat-val">${onlineCount}</div>
+      <div class="stat-icon">🟢</div><div class="stat-val">${onlineCount}</div>
       <div class="stat-lbl">متواجدون الآن</div>
       <div class="stat-delta up">▲ نشط خلال دقيقتين</div>
     </div>
     <div class="stat-card" style="--accent:var(--sapphire-lt)">
-      <div class="stat-icon">🎮</div>
-      <div class="stat-val">${activeRooms}</div>
+      <div class="stat-icon">🎮</div><div class="stat-val">${activeRooms}</div>
       <div class="stat-lbl">غرف نشطة</div>
     </div>
     <div class="stat-card" style="--accent:var(--gold)">
-      <div class="stat-icon">📅</div>
-      <div class="stat-val">${todayCount}</div>
+      <div class="stat-icon">📅</div><div class="stat-val">${todayCount}</div>
       <div class="stat-lbl">لاعبون اليوم</div>
     </div>
     <div class="stat-card" style="--accent:var(--gold)">
-      <div class="stat-icon">📆</div>
-      <div class="stat-val">${weekCount}</div>
+      <div class="stat-icon">📆</div><div class="stat-val">${weekCount}</div>
       <div class="stat-lbl">لاعبون هذا الأسبوع</div>
     </div>
     <div class="stat-card" style="--accent:var(--sapphire-lt)">
-      <div class="stat-icon">🎲</div>
-      <div class="stat-val">${totalSessions.toLocaleString()}</div>
+      <div class="stat-icon">🎲</div><div class="stat-val">${totalSessions.toLocaleString()}</div>
       <div class="stat-lbl">إجمالي الجلسات</div>
     </div>
     <div class="stat-card" style="--accent:var(--emerald-lt)">
-      <div class="stat-icon">⏱</div>
-      <div class="stat-val">${avgPlay}د</div>
+      <div class="stat-icon">⏱</div><div class="stat-val">${avgPlay}د</div>
       <div class="stat-lbl">متوسط وقت اللعب</div>
     </div>
     <div class="stat-card" style="--accent:var(--crimson-lt)">
-      <div class="stat-icon">🚫</div>
-      <div class="stat-val">${_allPlayers.filter(p=>p.banned).length}</div>
+      <div class="stat-icon">🚫</div><div class="stat-val">${bannedCount}</div>
       <div class="stat-lbl">محظورون</div>
+    </div>
+    <div class="stat-card" style="--accent:var(--sapphire-lt)">
+      <div class="stat-icon">📱</div><div class="stat-val">${mobileCount}</div>
+      <div class="stat-lbl">مستخدمو الجوال</div>
     </div>
   `;
   document.getElementById('last-refresh').textContent = new Date().toLocaleTimeString('ar-SA');
   renderBarCharts();
 }
 
-// ── BAR CHARTS ──
 function renderBarCharts(){
   const now = Date.now();
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  // أسبوعي
   const weekly = [];
   for(let i=6;i>=0;i--){
     const dayStart = todayStart.getTime() - i*86400000;
@@ -639,10 +956,7 @@ function renderBarCharts(){
     weekly.push({lbl,cnt});
   }
   renderBar('bar-weekly', weekly);
-
-  // يومي (24 ساعة بـ 6 أجزاء)
   const daily = [];
-  const labels = ['18:00','12:00','06:00','00:00','18س','12س','6س','الآن'];
   for(let i=7;i>=0;i--){
     const t0 = now - i*3*60*60*1000;
     const t1 = t0 + 3*60*60*1000;
@@ -661,8 +975,7 @@ function renderBar(id, data){
       <div class="bar-val">${d.cnt||''}</div>
       <div class="bar" style="height:${Math.max((d.cnt/max)*100,2)}%" title="${d.cnt}"></div>
       <div class="bar-lbl">${d.lbl}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 // ── PLAYERS TABLE ──
@@ -690,15 +1003,20 @@ function renderPlayersTable(players){
           <td><span class="badge ${p.device==='mobile'?'badge-mobile':'badge-desktop'}">${p.device==='mobile'?'📱 جوال':'💻 كمبيوتر'}</span></td>
           <td class="td-time">${p.country||'—'}</td>
           <td>${p.banned?'<span class="badge badge-banned">محظور</span>':((Date.now()-p.lastSeen)<120000?'<span class="badge badge-online">متصل</span>':'')}</td>
-        </tr>
-      `).join('')}
+        </tr>`).join('')}
     </tbody>
   </table>`;
 }
 
 window.filterPlayers = function(){
-  const q = document.getElementById('player-search').value.toLowerCase();
-  const filtered = q ? _allPlayers.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.uid||'').toLowerCase().includes(q)) : _allPlayers;
+  const q      = document.getElementById('player-search').value.toLowerCase();
+  const device = document.getElementById('filter-device').value;
+  const status = document.getElementById('filter-status').value;
+  let filtered = _allPlayers;
+  if(q) filtered = filtered.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.uid||'').toLowerCase().includes(q));
+  if(device) filtered = filtered.filter(p=>p.device===device);
+  if(status==='online')  filtered = filtered.filter(p=>(Date.now()-p.lastSeen)<120000);
+  if(status==='banned')  filtered = filtered.filter(p=>p.banned);
   renderPlayersTable(filtered);
 };
 
@@ -717,6 +1035,8 @@ window.showPlayerDetail = function(uid){
           ${p.banned
             ? `<button class="action-btn info" onclick="unbanPlayer('${p.uid}')">🔓 إلغاء الحظر</button>`
             : `<button class="action-btn warn" onclick="banPlayer('${p.uid}')">🚫 حظر</button>`}
+          <button class="action-btn success" onclick="copyUID('${p.uid}')">📋 نسخ الـ ID</button>
+          <button class="action-btn info" onclick="exportPlayerDirect('${p.uid}')">📤 تصدير البيانات</button>
           <button class="action-btn warn" onclick="deletePlayerData('${p.uid}')">🗑️ حذف البيانات</button>
         </div>
       </div>
@@ -732,13 +1052,13 @@ window.showPlayerDetail = function(uid){
       <div class="info-row"><span class="info-key">الجهاز</span><span class="info-val">${p.device==='mobile'?'📱 جوال':'💻 كمبيوتر'}</span></div>
       <div class="info-row"><span class="info-key">الدولة</span><span class="info-val">${p.country||'—'}</span></div>
       <div class="info-row"><span class="info-key">الحالة</span><span class="info-val">${p.banned?'🚫 محظور':'✅ نشط'}</span></div>
+      ${p.banReason?`<div class="info-row"><span class="info-key">سبب الحظر</span><span class="info-val">${esc(p.banReason)}</span></div>`:''}
     </div>
   `;
 };
 
-// ── CHARTS PAGE ──
+// ── CHARTS ──
 function renderCharts(){
-  // 30 يوم
   const now = Date.now();
   const el30 = document.getElementById('chart-30d'); if(!el30) return;
   const days30 = [];
@@ -757,24 +1077,22 @@ function renderCharts(){
       <div class="bar-lbl" style="font-size:7px;transform:rotate(-40deg);margin-top:2px;">${d.lbl}</div>
     </div>`).join('')}</div>`;
 
-  // devices
-  const mobile  = _allPlayers.filter(p=>p.device==='mobile').length;
+  const mobile = _allPlayers.filter(p=>p.device==='mobile').length;
   const desktop = _allPlayers.length - mobile;
-  const total   = _allPlayers.length || 1;
+  const total = _allPlayers.length || 1;
   document.getElementById('chart-devices').innerHTML = `
     <div style="text-align:center;">
       <div style="font-size:36px;">📱</div>
       <div style="font-family:var(--mono);font-size:22px;color:var(--sapphire-lt);">${Math.round(mobile/total*100)}%</div>
-      <div style="font-size:11px;color:var(--text-dim);">جوال (${mobile})</div>
+      <div style="font-size:11px;color:var(--text-muted);">جوال (${mobile})</div>
     </div>
     <div style="width:1px;background:var(--border2);height:80px;"></div>
     <div style="text-align:center;">
       <div style="font-size:36px;">💻</div>
       <div style="font-family:var(--mono);font-size:22px;color:var(--gold);">${Math.round(desktop/total*100)}%</div>
-      <div style="font-size:11px;color:var(--text-dim);">كمبيوتر (${desktop})</div>
+      <div style="font-size:11px;color:var(--text-muted);">كمبيوتر (${desktop})</div>
     </div>`;
 
-  // countries
   const countries = {};
   _allPlayers.forEach(p=>{ if(p.country) countries[p.country]=(countries[p.country]||0)+1; });
   const sorted = Object.entries(countries).sort((a,b)=>b[1]-a[1]).slice(0,6);
@@ -783,25 +1101,28 @@ function renderCharts(){
     ? sorted.map(([c,n])=>`
         <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border2);">
           <div style="font-size:12px;color:var(--text-dim);width:80px;">${c}</div>
-          <div style="flex:1;background:rgba(201,168,76,.1);border-radius:3px;height:6px;overflow:hidden;">
+          <div style="flex:1;background:rgba(160,120,40,.08);border-radius:3px;height:6px;overflow:hidden;">
             <div style="height:100%;width:${n/maxC*100}%;background:var(--gold);border-radius:3px;"></div>
           </div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--gold);width:24px;text-align:left;">${n}</div>
         </div>`).join('')
-    : '<div class="empty-text" style="color:var(--text-dim);font-size:12px;padding:20px 0;">لا توجد بيانات بعد</div>';
+    : '<div style="color:var(--text-muted);font-size:12px;padding:20px 0;">لا توجد بيانات بعد</div>';
 }
 
 // ── ACTIVITY ──
 window.loadActivity = async function(){
   const el = document.getElementById('activity-list');
-  el.innerHTML = '<div class="loading">جارٍ التحميل <span class="spinner-small"></span></div>';
+  const filterVal = document.getElementById('activity-filter')?.value || '';
+  el.innerHTML = '<div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>';
   try{
     const snap = await get(r('admin/activity'));
     if(!snap.exists()){ el.innerHTML='<div class="empty"><div class="empty-icon">📜</div><div class="empty-text">لا توجد أحداث</div></div>'; return; }
-    const items = Object.values(snap.val()).sort((a,b)=>b.ts-a.ts).slice(0,100);
+    let items = Object.values(snap.val()).sort((a,b)=>b.ts-a.ts);
+    if(filterVal) items = items.filter(a=>a.type===filterVal);
+    items = items.slice(0,100);
     el.innerHTML = items.map(a=>`
       <div class="activity-item">
-        <div class="activity-icon" style="background:${actColor(a.type)}20;color:${actColor(a.type)}">${actIcon(a.type)}</div>
+        <div class="activity-icon" style="background:${actColor(a.type)}18;color:${actColor(a.type)}">${actIcon(a.type)}</div>
         <div class="activity-body">
           <div class="activity-text">${esc(a.msg||a.type)}</div>
           <div class="activity-time">${fmtDate(a.ts)} — ${a.uid?.slice(0,8)||'system'}</div>
@@ -810,73 +1131,263 @@ window.loadActivity = async function(){
   }catch(e){ el.innerHTML='<div class="empty"><div class="empty-text">خطأ في التحميل</div></div>'; }
 };
 function actIcon(t){ return {join:'🟢',leave:'🔴',ban:'🚫',unban:'🔓',delete:'🗑️',game:'🎮',announce:'📢'}[t]||'📌'; }
-function actColor(t){ return {join:'#2ecc71',leave:'#e74c3c',ban:'#e74c3c',unban:'#3498db',delete:'#e67e22',game:'#c9a84c',announce:'#3498db'}[t]||'#8a8070'; }
+function actColor(t){ return {join:'#28a05a',leave:'#d44030',ban:'#d44030',unban:'#2a5acc',delete:'#e67e22',game:'#a07828',announce:'#2a5acc'}[t]||'#7a6840'; }
+
+window.clearActivityLog = async function(){
+  showConfirm('مسح سجل النشاط', 'سيتم حذف جميع سجلات النشاط، هذا الإجراء لا يمكن التراجع عنه.', async ()=>{
+    try{
+      await remove(r('admin/activity'));
+      loadActivity();
+      notify('✅ تم مسح السجل','success');
+    }catch(e){ notify('❌ فشل','error'); }
+  });
+};
+
+// ── BROADCAST ──
+window.previewAnn = function(){
+  const t = document.getElementById('ann-title').value || 'العنوان سيظهر هنا';
+  const b = document.getElementById('ann-body').value  || 'نص الإعلان سيظهر هنا...';
+  document.getElementById('ann-prev-title').textContent = t;
+  document.getElementById('ann-prev-body').textContent  = b;
+};
+
+window.checkCurrentAnn = async function(){
+  const el = document.getElementById('ann-status-check');
+  if(!el) return;
+  try{
+    const snap = await get(r('admin/announcement'));
+    if(snap.exists()){
+      const d = snap.val();
+      el.className = 'status-banner ok';
+      el.innerHTML = `✅ يوجد إعلان نشط: <b>${esc(d.title||'—')}</b> — أُرسل ${fmtAgo(d.ts)}`;
+      if(d.title) document.getElementById('ann-title').value = d.title;
+      if(d.body)  { document.getElementById('ann-body').value  = d.body; previewAnn(); }
+    } else {
+      el.className = 'status-banner info';
+      el.innerHTML = 'ℹ️ لا يوجد إعلان نشط حالياً';
+    }
+  }catch(e){
+    el.className = 'status-banner warn';
+    el.innerHTML = '⚠️ فشل التحقق من الاتصال بـ Firebase';
+  }
+};
+
+window.sendAnnouncement = async function(){
+  const title = document.getElementById('ann-title').value.trim();
+  const body  = document.getElementById('ann-body').value.trim();
+  const msgEl = document.getElementById('ann-msg');
+  if(!title || !body){
+    msgEl.className = 'tool-msg error';
+    msgEl.textContent = '❌ يجب إدخال العنوان والنص';
+    return;
+  }
+  try{
+    // حفظ في admin/announcement
+    await set(r('admin/announcement'), { title, body, ts: Date.now(), active: true });
+    // أيضاً حفظ في announcements/ للوصول العام من اللعبة
+    await set(r('announcements/current'), { title, body, ts: Date.now(), active: true });
+    await logActivity('announce', `📢 إعلان: ${title}`, 'admin');
+    msgEl.className = 'tool-msg success';
+    msgEl.textContent = '✅ تم إرسال الإعلان بنجاح!';
+    checkCurrentAnn();
+    setTimeout(()=>msgEl.textContent='', 4000);
+  }catch(e){
+    msgEl.className = 'tool-msg error';
+    msgEl.textContent = '❌ فشل الإرسال: ' + e.message;
+  }
+};
+
+window.clearAnnouncement = async function(){
+  showConfirm('حذف الإعلان', 'هل تريد حذف الإعلان الحالي؟', async ()=>{
+    try{
+      await remove(r('admin/announcement'));
+      await remove(r('announcements/current'));
+      await logActivity('announce', '🗑️ حُذف الإعلان', 'admin');
+      checkCurrentAnn();
+      notify('✅ تم حذف الإعلان','success');
+    }catch(e){ notify('❌ فشل','error'); }
+  });
+};
+
+window.sendRoomMsg = async function(){
+  const roomId = document.getElementById('room-id-msg').value.trim();
+  const msgBody = document.getElementById('room-msg-body').value.trim();
+  const status  = document.getElementById('room-msg-status');
+  if(!roomId || !msgBody){ status.className='tool-msg error'; status.textContent='❌ أدخل الـ Room ID والرسالة'; return; }
+  try{
+    await set(r(`rooms/${roomId}/systemMsg`), { text: msgBody, ts: Date.now() });
+    status.className = 'tool-msg success';
+    status.textContent = '✅ تم إرسال الرسالة للغرفة';
+    setTimeout(()=>status.textContent='', 3000);
+  }catch(e){ status.className='tool-msg error'; status.textContent='❌ فشل: '+e.message; }
+};
+
+window.sendTargetedNotif = async function(){
+  const target = document.getElementById('notif-target').value;
+  const msg    = document.getElementById('notif-msg').value.trim();
+  const status = document.getElementById('notif-target-msg');
+  if(!msg){ status.className='tool-msg error'; status.textContent='❌ أدخل نص الإشعار'; return; }
+  let targets = _allPlayers;
+  if(target==='online')  targets = targets.filter(p=>(Date.now()-p.lastSeen)<120000);
+  if(target==='mobile')  targets = targets.filter(p=>p.device==='mobile');
+  if(target==='desktop') targets = targets.filter(p=>p.device!=='mobile');
+  try{
+    await set(r('admin/targeted_notif'), { msg, target, count: targets.length, ts: Date.now() });
+    await logActivity('announce', `🔔 إشعار لـ ${targets.length} لاعب (${target})`, 'admin');
+    status.className = 'tool-msg success';
+    status.textContent = `✅ تم الإرسال لـ ${targets.length} لاعب`;
+    setTimeout(()=>status.textContent='', 4000);
+  }catch(e){ status.className='tool-msg error'; status.textContent='❌ فشل'; }
+};
+
+// ── MODERATION ──
+async function loadModeration(){
+  // المحظورون
+  const bannedEl = document.getElementById('banned-list');
+  const banned = _allPlayers.filter(p=>p.banned);
+  document.getElementById('banned-count').textContent = `(${banned.length})`;
+  if(!banned.length){
+    bannedEl.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">لا يوجد محظورون</div></div>';
+  } else {
+    bannedEl.innerHTML = `<table><thead><tr><th>اللاعب</th><th>ID</th><th>سبب الحظر</th><th>تاريخ الحظر</th><th>إجراء</th></tr></thead><tbody>
+      ${banned.map(p=>`<tr>
+        <td><span style="font-size:16px;margin-left:6px;">${p.av||'🤴'}</span>${esc(p.name||'—')}</td>
+        <td class="td-id">${p.uid?.slice(0,8)||'—'}</td>
+        <td class="td-time">${esc(p.banReason||'—')}</td>
+        <td class="td-time">${fmtDate(p.bannedAt)}</td>
+        <td><button onclick="unbanPlayer('${p.uid}')" style="padding:4px 10px;font-size:11px;border-radius:6px;border:1px solid rgba(42,90,204,.3);background:rgba(42,90,204,.06);color:var(--sapphire-lt);cursor:pointer;">رفع الحظر</button></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+  // إحصائيات
+  const modEl = document.getElementById('mod-stats');
+  const totalBans = banned.length;
+  const recentBans = banned.filter(p=>p.bannedAt&&(Date.now()-p.bannedAt)<86400000*7).length;
+  modEl.innerHTML = `
+    <div class="info-row"><span class="info-key">إجمالي المحظورين</span><span class="info-val" style="color:var(--crimson);">${totalBans}</span></div>
+    <div class="info-row"><span class="info-key">حظر هذا الأسبوع</span><span class="info-val">${recentBans}</span></div>
+    <div class="info-row"><span class="info-key">نسبة الحظر</span><span class="info-val">${_allPlayers.length ? Math.round(totalBans/_allPlayers.length*100) : 0}%</span></div>
+  `;
+}
 
 // ── TOOLS ──
 window.toolSearch = async function(){
   const q = document.getElementById('tool-search').value.trim().toLowerCase();
   const msg = document.getElementById('tool-search-msg');
   const res = document.getElementById('tool-search-results');
-  if(!q){ msg.textContent='أدخل اسم أو ID'; return; }
+  if(!q){ msg.className='tool-msg error'; msg.textContent='أدخل اسم أو ID'; return; }
   const found = _allPlayers.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.uid||'').includes(q));
-  if(!found.length){ msg.textContent='لم يُعثر على لاعب'; res.innerHTML=''; return; }
-  msg.textContent = `عُثر على ${found.length} لاعب`;
+  if(!found.length){ msg.className='tool-msg error'; msg.textContent='لم يُعثر على لاعب'; res.innerHTML=''; return; }
+  msg.className='tool-msg success'; msg.textContent = `عُثر على ${found.length} لاعب`;
   res.innerHTML = found.slice(0,5).map(p=>`
-    <div onclick="showPlayerDetail('${p.uid}')" style="display:flex;align-items:center;gap:10px;padding:10px;background:rgba(255,255,255,.03);border-radius:8px;cursor:pointer;margin-top:6px;border:1px solid var(--border2);">
+    <div onclick="showPlayerDetail('${p.uid}')" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:8px;cursor:pointer;margin-top:6px;border:1px solid var(--border2);transition:.15s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border2)'">
       <span style="font-size:20px;">${p.av||'🤴'}</span>
       <div>
         <div style="font-size:13px;color:var(--text);">${esc(p.name)}</div>
-        <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);">${p.uid?.slice(0,12)}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);">${p.uid?.slice(0,12)}</div>
       </div>
+      ${p.banned?'<span class="badge badge-banned" style="margin-right:auto;">محظور</span>':''}
     </div>`).join('');
 };
 
-window.sendAnnouncement = async function(){
-  const title = document.getElementById('ann-title').value.trim();
-  const body  = document.getElementById('ann-body').value.trim();
-  const msg   = document.getElementById('ann-msg');
-  if(!title||!body){ msg.textContent='❌ أدخل العنوان والنص'; return; }
+window.copyResults = function(){
+  const found = _allPlayers.filter(p=>{
+    const q = document.getElementById('tool-search').value.trim().toLowerCase();
+    return (p.name||'').toLowerCase().includes(q)||(p.uid||'').includes(q);
+  });
+  if(!found.length) return;
+  const text = found.map(p=>`${p.name} | ${p.uid} | ${p.country||'—'}`).join('\n');
+  navigator.clipboard.writeText(text).then(()=>notify('✅ تم النسخ','success'));
+};
+
+window.selectReward = function(el, type){
+  document.querySelectorAll('.reward-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  _selectedReward = type;
+};
+
+window.grantReward = async function(){
+  const uid = document.getElementById('reward-id').value.trim();
+  const msg = document.getElementById('reward-msg');
+  if(!uid){ msg.className='tool-msg error'; msg.textContent='❌ أدخل Player ID'; return; }
+  if(!_selectedReward){ msg.className='tool-msg error'; msg.textContent='❌ اختر نوع المكافأة'; return; }
   try{
-    await set(r('admin/announcement'), { title, body, ts: Date.now() });
-    await logActivity('announce', `📢 إعلان: ${title}`, 'system');
-    msg.textContent = '✅ تم إرسال الإعلان';
-    document.getElementById('ann-title').value='';
-    document.getElementById('ann-body').value='';
-    setTimeout(()=>msg.textContent='', 3000);
-  }catch(e){ msg.textContent='❌ فشل الإرسال'; }
+    await push(r(`admin/rewards`), { uid, type:_selectedReward, ts:Date.now(), status:'pending' });
+    await logActivity('game', `🎁 مكافأة ${_selectedReward} → ${uid}`, 'admin');
+    msg.className='tool-msg success'; msg.textContent='✅ تمت إضافة المكافأة';
+    document.getElementById('reward-id').value='';
+    _selectedReward='';
+    document.querySelectorAll('.reward-btn').forEach(b=>b.classList.remove('active'));
+    setTimeout(()=>msg.textContent='',3000);
+  }catch(e){ msg.className='tool-msg error'; msg.textContent='❌ فشل: '+e.message; }
 };
 
 window.toolBan = async function(){
   const uid    = document.getElementById('ban-id').value.trim();
-  const reason = document.getElementById('ban-reason').value.trim();
+  const reasonType = document.getElementById('ban-reason-type').value;
+  const reasonExtra = document.getElementById('ban-reason').value.trim();
+  const reason = [reasonType, reasonExtra].filter(Boolean).join(' — ');
   const msg    = document.getElementById('ban-msg');
-  if(!uid){ msg.textContent='❌ أدخل Player ID'; return; }
+  if(!uid){ msg.className='tool-msg error'; msg.textContent='❌ أدخل Player ID'; return; }
   showConfirm('تأكيد الحظر', `هل تريد حظر اللاعب: <b>${uid}</b>؟<br><small>السبب: ${reason||'—'}</small>`, async ()=>{
     await banPlayer(uid, reason);
     document.getElementById('ban-id').value='';
     document.getElementById('ban-reason').value='';
-    msg.textContent='✅ تم الحظر'; setTimeout(()=>msg.textContent='',3000);
+    document.getElementById('ban-reason-type').value='';
+    msg.className='tool-msg success'; msg.textContent='✅ تم الحظر';
+    setTimeout(()=>msg.textContent='',3000);
   });
+};
+
+window.toolUnban = async function(){
+  const uid = document.getElementById('ban-id').value.trim();
+  const msg = document.getElementById('ban-msg');
+  if(!uid){ msg.className='tool-msg error'; msg.textContent='❌ أدخل Player ID'; return; }
+  await unbanPlayer(uid);
+  document.getElementById('ban-id').value='';
 };
 
 window.toolDelete = async function(){
   const uid = document.getElementById('del-id').value.trim();
   const msg = document.getElementById('del-msg');
-  if(!uid){ msg.textContent='❌ أدخل Player ID'; return; }
+  if(!uid){ msg.className='tool-msg error'; msg.textContent='❌ أدخل Player ID'; return; }
   showConfirm('⚠️ تأكيد الحذف', `سيتم حذف جميع بيانات اللاعب: <b>${uid}</b><br>هذا الإجراء لا يمكن التراجع عنه!`, async ()=>{
     await deletePlayerData(uid);
     document.getElementById('del-id').value='';
-    msg.textContent='✅ تم الحذف'; setTimeout(()=>msg.textContent='',3000);
+    msg.className='tool-msg success'; msg.textContent='✅ تم الحذف';
+    setTimeout(()=>msg.textContent='',3000);
   });
 };
 
+window.exportPlayer = async function(){
+  const uid = document.getElementById('del-id').value.trim();
+  if(!uid){ notify('❌ أدخل Player ID','error'); return; }
+  exportPlayerDirect(uid);
+};
+
+window.exportPlayerDirect = function(uid){
+  const p = _allPlayers.find(x=>x.uid===uid);
+  if(!p){ notify('❌ لاعب غير موجود','error'); return; }
+  const blob = new Blob([JSON.stringify(p, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `player_${uid.slice(0,8)}.json`;
+  a.click();
+  notify('✅ تم تصدير البيانات','success');
+};
+
+window.copyUID = function(uid){
+  navigator.clipboard.writeText(uid).then(()=>notify('✅ تم نسخ الـ ID','success'));
+};
+
+// ── BAN / UNBAN / DELETE ──
 window.banPlayer = async function(uid, reason=''){
   try{
     await update(r(`admin/players/${uid}`), { banned:true, banReason:reason, bannedAt:Date.now() });
     await set(r(`admin/banned/${uid}`), { ts:Date.now(), reason });
     await logActivity('ban', `🚫 حظر: ${uid} — ${reason}`, 'admin');
     const p = _allPlayers.find(x=>x.uid===uid);
-    if(p) p.banned = true;
+    if(p){ p.banned=true; p.banReason=reason; }
     notify('✅ تم الحظر','success');
   }catch(e){ notify('❌ فشل الحظر','error'); }
 };
@@ -889,7 +1400,8 @@ window.unbanPlayer = async function(uid){
     const p = _allPlayers.find(x=>x.uid===uid);
     if(p) p.banned = false;
     notify('✅ رُفع الحظر','success');
-    showPage('players');
+    if(_currentPage==='moderation') loadModeration();
+    else showPage('players');
   }catch(e){ notify('❌ فشل','error'); }
 };
 
@@ -903,6 +1415,77 @@ window.deletePlayerData = async function(uid){
   }catch(e){ notify('❌ فشل الحذف','error'); }
 };
 
+// ── SETTINGS ──
+async function loadSysInfo(){
+  const el = document.getElementById('sys-info');
+  try{
+    const snap = await get(r('.info'));
+    el.innerHTML = `
+      <div class="info-row"><span class="info-key">Firebase</span><span class="info-val" style="color:var(--emerald);">✅ متصل</span></div>
+      <div class="info-row"><span class="info-key">إجمالي اللاعبين</span><span class="info-val">${_allPlayers.length}</span></div>
+      <div class="info-row"><span class="info-key">قاعدة البيانات</span><span class="info-val" style="font-size:10px;">coup-online-dd079</span></div>
+      <div class="info-row"><span class="info-key">المنطقة</span><span class="info-val">us-central1</span></div>
+    `;
+  }catch(e){
+    el.innerHTML = `<div class="info-row"><span class="info-key">Firebase</span><span class="info-val" style="color:var(--crimson);">⚠️ خطأ</span></div>`;
+  }
+}
+
+window.saveGameSettings = async function(){
+  const maxPlayers = document.getElementById('max-players-range').value;
+  const roomTimeout = document.getElementById('room-timeout-range').value;
+  const msg = document.getElementById('settings-msg');
+  try{
+    await set(r('admin/settings'), { maxPlayersPerRoom: parseInt(maxPlayers), roomTimeoutMin: parseInt(roomTimeout), updatedAt: Date.now() });
+    msg.className='tool-msg success'; msg.textContent='✅ تم حفظ الإعدادات';
+    setTimeout(()=>msg.textContent='',3000);
+  }catch(e){ msg.className='tool-msg error'; msg.textContent='❌ فشل الحفظ'; }
+};
+
+window.changeAdminPass = function(){
+  const np = document.getElementById('new-password').value;
+  const cp = document.getElementById('confirm-password').value;
+  const msg = document.getElementById('pass-msg');
+  if(!np || np.length < 8){ msg.className='tool-msg error'; msg.textContent='❌ كلمة المرور يجب أن تكون 8 أحرف على الأقل'; return; }
+  if(np !== cp){ msg.className='tool-msg error'; msg.textContent='❌ كلمتا المرور غير متطابقتين'; return; }
+  ADMIN_PASS = np;
+  localStorage.setItem(ADMIN_PASS_KEY, np);
+  msg.className='tool-msg success'; msg.textContent='✅ تم تغيير كلمة المرور';
+  document.getElementById('new-password').value='';
+  document.getElementById('confirm-password').value='';
+  setTimeout(()=>msg.textContent='',3000);
+};
+
+window.exportAllPlayers = function(){
+  const blob = new Blob([JSON.stringify(_allPlayers, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `all_players_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  notify('✅ تم تصدير بيانات جميع اللاعبين','success');
+};
+
+window.purgeOldActivity = async function(){
+  showConfirm('حذف السجلات القديمة', 'سيتم حذف جميع سجلات النشاط الأقدم من 30 يوماً.', async ()=>{
+    const msg = document.getElementById('db-msg');
+    try{
+      const snap = await get(r('admin/activity'));
+      if(snap.exists()){
+        const cutoff = Date.now() - 30*86400000;
+        const updates = {};
+        Object.entries(snap.val()).forEach(([k,v])=>{ if(v.ts < cutoff) updates[k]=null; });
+        if(Object.keys(updates).length){
+          await update(r('admin/activity'), updates);
+          msg.className='tool-msg success'; msg.textContent=`✅ تم حذف ${Object.keys(updates).length} سجل`;
+        } else {
+          msg.className='tool-msg success'; msg.textContent='✅ لا توجد سجلات قديمة';
+        }
+        setTimeout(()=>msg.textContent='',3000);
+      }
+    }catch(e){ msg.className='tool-msg error'; msg.textContent='❌ فشل'; }
+  });
+};
+
 async function logActivity(type, msg, uid){
   await push(r('admin/activity'), { type, msg, uid, ts: Date.now() });
 }
@@ -912,8 +1495,9 @@ window.showConfirm = function(title, body, onOk){
   document.getElementById('modal-title').innerHTML = title;
   document.getElementById('modal-body').innerHTML  = body;
   document.getElementById('modal-actions').innerHTML = `
-    <button class="tool-btn" style="background:rgba(255,255,255,.05);border-color:var(--border);color:var(--text-dim);" onclick="closeModal()">إلغاء</button>
-    <button class="tool-btn red" onclick="closeModal();(${onOk.toString()})()">تأكيد</button>`;
+    <button class="tool-btn" style="background:var(--surface2);border-color:var(--border2);color:var(--text-dim);" onclick="closeModal()">إلغاء</button>
+    <button class="tool-btn red" id="modal-confirm-btn">تأكيد</button>`;
+  document.getElementById('modal-confirm-btn').onclick = ()=>{ closeModal(); onOk(); };
   document.getElementById('overlay').classList.add('open');
 };
 window.closeModal = ()=>document.getElementById('overlay').classList.remove('open');
@@ -947,49 +1531,5 @@ function fmtMs(ms){
   return h ? `${h}س ${m}د` : `${m}د`;
 }
 </script>
-
-<!-- ══════════════════════════════════════════════════════
-     الكود الذي يُضاف في coup_fixed.html لتتبع اللاعبين
-     أضف هذا الكود في بداية script الرئيسي للعبة
-═══════════════════════════════════════════════════════ -->
-<!-- 
-TRACKING CODE (add to coup_fixed.html):
-
-async function trackPlayer(name, av) {
-  if (!name || !uid()) return;
-  const pid = uid();
-  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-  let country = '—';
-  try {
-    const geoRes = await fetch('https://ipapi.co/json/');
-    const geo = await geoRes.json();
-    country = geo.country_name || '—';
-  } catch(e) {}
-  
-  const now = Date.now();
-  const existing = await dbGet(`admin/players/${pid}`);
-  
-  if (!existing) {
-    await dbSet(`admin/players/${pid}`, {
-      uid: pid, name, av,
-      firstSeen: now, lastSeen: now,
-      sessions: 1, totalPlayMs: 0,
-      device: isMobile ? 'mobile' : 'desktop',
-      country
-    });
-    await dbPush('admin/activity', { type:'join', msg:`🟢 لاعب جديد: ${name}`, uid: pid, ts: now });
-  } else {
-    await dbUpdate(`admin/players/${pid}`, {
-      lastSeen: now, name, av,
-      sessions: (existing.sessions || 0) + 1
-    });
-  }
-}
-
-// استدعِ trackPlayer عند إنشاء الغرفة والانضمام:
-// في createRoom()  → trackPlayer(name, ME.av)
-// في joinRoom()    → trackPlayer(name, ME.av)
-// في startSolo()   → trackPlayer(name, ME.av)
--->
 </body>
 </html>
