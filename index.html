@@ -210,6 +210,28 @@ textarea.tool-input{resize:vertical;min-height:100px;}
 .tool-btn.gold:hover{background:rgba(201,168,76,.22);box-shadow:0 0 12px var(--gold-glow);}
 .tool-btn.red{background:rgba(231,76,60,.1);border-color:rgba(231,76,60,.3);color:var(--crimson-lt);}
 .tool-btn.red:hover{background:rgba(231,76,60,.2);}
+.tool-btn.blue{background:rgba(42,90,204,.08);border-color:rgba(42,90,204,.25);color:var(--sapphire-lt);}
+.tool-btn.blue:hover{background:rgba(42,90,204,.16);}
+.tool-btn.green{background:rgba(40,160,90,.08);border-color:rgba(40,160,90,.25);color:var(--emerald);}
+.tool-btn.green:hover{background:rgba(40,160,90,.16);}
+.tool-desc{font-size:11px;color:var(--text-muted);margin-bottom:16px;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.select-input{width:100%;padding:11px 14px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:13px;font-family:var(--sans);outline:none;margin-bottom:10px;cursor:pointer;appearance:none;}
+.select-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow);}
+.reward-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.reward-btn{padding:8px;border-radius:var(--radius-sm);border:1.5px solid var(--border2);background:var(--surface2);font-size:12px;cursor:pointer;transition:.15s;text-align:center;}
+.reward-btn:hover{border-color:var(--gold);color:var(--gold);}
+.reward-btn.active{border-color:var(--gold);background:rgba(160,120,40,.08);color:var(--gold);}
+.ann-preview{background:linear-gradient(135deg,rgba(160,120,40,.08),rgba(160,120,40,.04));border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-top:10px;font-size:12px;}
+.ann-preview-title{font-weight:600;color:var(--gold);margin-bottom:4px;}
+.ann-preview-body{color:var(--text-dim);line-height:1.6;}
+.status-banner{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:10px;}
+.status-banner.info{background:rgba(42,90,204,.06);border:1px solid rgba(42,90,204,.2);color:var(--sapphire-lt);}
+.status-banner.warn{background:rgba(176,48,32,.06);border:1px solid rgba(176,48,32,.2);color:var(--crimson);}
+.status-banner.ok{background:rgba(40,160,90,.06);border:1px solid rgba(40,160,90,.2);color:var(--emerald);}
+.range-wrap{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.range-wrap input[type=range]{flex:1;accent-color:var(--gold);}
+.range-val{font-family:var(--mono);font-size:12px;color:var(--gold);min-width:36px;text-align:center;}
 .tool-msg{font-size:12px;margin-top:10px;color:var(--emerald-lt);min-height:18px;font-family:var(--mono);}
 
 /* ── NOTIFICATION ── */
@@ -306,11 +328,18 @@ svg.line-chart{width:100%;height:120px;}
       <div class="s-sub">ADMIN PANEL</div>
     </div>
     <nav class="nav">
+      <div class="nav-section">الرئيسية</div>
       <div class="nav-item active" onclick="showPage('overview')"><span class="nav-icon">📊</span> نظرة عامة</div>
       <div class="nav-item" onclick="showPage('players')"><span class="nav-icon">👥</span> اللاعبون</div>
       <div class="nav-item" onclick="showPage('charts')"><span class="nav-icon">📈</span> الرسوم البيانية</div>
+      <div class="nav-section">الإدارة</div>
+      <div class="nav-item" onclick="showPage('rooms')"><span class="nav-icon">🏠</span> الغرف الحية</div>
       <div class="nav-item" onclick="showPage('tools')"><span class="nav-icon">🛠️</span> أدوات المطور</div>
+      <div class="nav-item" onclick="showPage('broadcast')"><span class="nav-icon">📢</span> البث والإعلانات</div>
+      <div class="nav-item" onclick="showPage('moderation')"><span class="nav-icon">🛡️</span> الإشراف</div>
+      <div class="nav-section">النظام</div>
       <div class="nav-item" onclick="showPage('activity')"><span class="nav-icon">📜</span> سجل النشاط</div>
+      <div class="nav-item" onclick="showPage('settings')"><span class="nav-icon">⚙️</span> الإعدادات</div>
     </nav>
     <div class="sidebar-footer">
       <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;font-family:var(--mono);">
@@ -392,40 +421,147 @@ svg.line-chart{width:100%;height:120px;}
     <!-- TOOLS -->
     <div class="page" id="page-tools">
       <div class="page-header">
-        <div class="page-title">أدوات المطور</div>
-        <div class="page-sub">إدارة اللاعبين والإعلانات</div>
+        <div>
+          <div class="page-title">أدوات المطور</div>
+          <div class="page-sub">إدارة اللاعبين — بحث، حظر، حذف</div>
+        </div>
       </div>
       <div class="tools-grid">
-        <!-- بحث -->
         <div class="tool-card">
           <div class="tool-title">🔍 البحث عن لاعب</div>
+          <div class="tool-desc">ابحث بالاسم أو بـ Player ID</div>
           <input class="tool-input" id="tool-search" placeholder="اسم اللاعب أو ID">
-          <button class="tool-btn gold" onclick="toolSearch()">بحث</button>
+          <div class="btn-row">
+            <button class="tool-btn gold" onclick="toolSearch()">بحث</button>
+            <button class="tool-btn blue" onclick="copyResults()">📋 نسخ النتائج</button>
+          </div>
           <div class="tool-msg" id="tool-search-msg"></div>
           <div id="tool-search-results" style="margin-top:12px;"></div>
         </div>
-        <!-- إعلان -->
         <div class="tool-card">
-          <div class="tool-title">📢 إرسال إعلان لجميع اللاعبين</div>
-          <input class="tool-input" id="ann-title" placeholder="عنوان الإعلان">
-          <textarea class="tool-input" id="ann-body" placeholder="نص الإعلان..."></textarea>
-          <button class="tool-btn gold" onclick="sendAnnouncement()">إرسال</button>
-          <div class="tool-msg" id="ann-msg"></div>
+          <div class="tool-title">🎁 منح مكافأة للاعب</div>
+          <div class="tool-desc">أضف عملات أو أنهِ جلسة اللاعب</div>
+          <input class="tool-input" id="reward-id" placeholder="Player ID">
+          <div class="reward-grid">
+            <div class="reward-btn" onclick="selectReward(this,'coins_100')">+100 عملة</div>
+            <div class="reward-btn" onclick="selectReward(this,'coins_500')">+500 عملة</div>
+            <div class="reward-btn" onclick="selectReward(this,'vip_1d')">VIP يوم</div>
+            <div class="reward-btn" onclick="selectReward(this,'reset_stats')">إعادة إحصائيات</div>
+          </div>
+          <div class="btn-row">
+            <button class="tool-btn green" onclick="grantReward()">منح</button>
+          </div>
+          <div class="tool-msg" id="reward-msg"></div>
         </div>
-        <!-- حظر -->
         <div class="tool-card">
           <div class="tool-title">🚫 حظر لاعب</div>
+          <div class="tool-desc">حظر مع تحديد السبب</div>
           <input class="tool-input" id="ban-id" placeholder="Player ID">
-          <input class="tool-input" id="ban-reason" placeholder="سبب الحظر">
-          <button class="tool-btn red" onclick="toolBan()">حظر</button>
+          <select class="select-input" id="ban-reason-type">
+            <option value="">— سبب الحظر —</option>
+            <option value="غش في اللعبة">🎮 غش في اللعبة</option>
+            <option value="لغة مسيئة">💬 لغة مسيئة</option>
+            <option value="إزعاج اللاعبين">😤 إزعاج اللاعبين</option>
+            <option value="اختراق">⚠️ اختراق</option>
+            <option value="آخر">📌 آخر</option>
+          </select>
+          <input class="tool-input" id="ban-reason" placeholder="تفاصيل إضافية (اختياري)">
+          <div class="btn-row">
+            <button class="tool-btn red" onclick="toolBan()">🚫 حظر</button>
+            <button class="tool-btn blue" onclick="toolUnban()">🔓 رفع حظر</button>
+          </div>
           <div class="tool-msg" id="ban-msg"></div>
         </div>
-        <!-- حذف -->
         <div class="tool-card">
-          <div class="tool-title">🗑️ حذف بيانات لاعب</div>
+          <div class="tool-title">🗑️ حذف / تصدير بيانات</div>
+          <div class="tool-desc">حذف بيانات لاعب أو تصدير معلوماته</div>
           <input class="tool-input" id="del-id" placeholder="Player ID">
-          <button class="tool-btn red" onclick="toolDelete()">حذف البيانات</button>
+          <div class="btn-row">
+            <button class="tool-btn red" onclick="toolDelete()">🗑️ حذف</button>
+            <button class="tool-btn blue" onclick="exportPlayer()">📤 تصدير JSON</button>
+          </div>
           <div class="tool-msg" id="del-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BROADCAST -->
+    <div class="page" id="page-broadcast">
+      <div class="page-header">
+        <div>
+          <div class="page-title">البث والإعلانات</div>
+          <div class="page-sub">إرسال رسائل وإعلانات للاعبين</div>
+        </div>
+      </div>
+      <div class="tools-grid">
+        <div class="tool-card" style="grid-column:span 2">
+          <div class="tool-title">📢 إعلان عام لجميع اللاعبين</div>
+          <div class="tool-desc">سيظهر الإعلان عند فتح اللعبة لجميع اللاعبين النشطين</div>
+          <div id="ann-status-check" class="status-banner info">⏳ جارٍ التحقق من الإعلان الحالي...</div>
+          <input class="tool-input" id="ann-title" placeholder="عنوان الإعلان (مثال: تحديث جديد!)">
+          <textarea class="tool-input" id="ann-body" placeholder="نص الإعلان..." oninput="previewAnn()" style="min-height:80px;"></textarea>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">المعاينة:</div>
+          <div class="ann-preview">
+            <div class="ann-preview-title" id="ann-prev-title">العنوان سيظهر هنا</div>
+            <div class="ann-preview-body" id="ann-prev-body">نص الإعلان سيظهر هنا...</div>
+          </div>
+          <div class="btn-row" style="margin-top:12px;">
+            <button class="tool-btn gold" onclick="sendAnnouncement()">📤 إرسال الإعلان</button>
+            <button class="tool-btn red" onclick="clearAnnouncement()">🗑️ حذف الإعلان الحالي</button>
+            <button class="tool-btn blue" onclick="checkCurrentAnn()">🔄 تحقق من الحالي</button>
+          </div>
+          <div class="tool-msg" id="ann-msg"></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-title">🎯 رسالة لغرفة محددة</div>
+          <div class="tool-desc">أرسل رسالة نظام لغرفة بعينها</div>
+          <input class="tool-input" id="room-id-msg" placeholder="Room ID">
+          <textarea class="tool-input" id="room-msg-body" placeholder="نص الرسالة..." style="min-height:70px;"></textarea>
+          <div class="btn-row">
+            <button class="tool-btn gold" onclick="sendRoomMsg()">إرسال</button>
+          </div>
+          <div class="tool-msg" id="room-msg-status"></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-title">🔔 إشعار لفئة من اللاعبين</div>
+          <div class="tool-desc">أرسل إشعار لمجموعة مختارة</div>
+          <select class="select-input" id="notif-target">
+            <option value="all">الكل</option>
+            <option value="online">المتصلون حالياً</option>
+            <option value="mobile">مستخدمو الجوال</option>
+            <option value="desktop">مستخدمو الكمبيوتر</option>
+          </select>
+          <input class="tool-input" id="notif-msg" placeholder="نص الإشعار">
+          <div class="btn-row">
+            <button class="tool-btn gold" onclick="sendTargetedNotif()">إرسال</button>
+          </div>
+          <div class="tool-msg" id="notif-target-msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODERATION -->
+    <div class="page" id="page-moderation">
+      <div class="page-header">
+        <div>
+          <div class="page-title">الإشراف</div>
+          <div class="page-sub">إدارة المحظورين ومراقبة المشكلات</div>
+        </div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-card" style="grid-column:span 2">
+          <div class="chart-title" style="margin-bottom:12px;">🚫 قائمة المحظورين <span id="banned-count" style="font-family:var(--mono);font-size:11px;color:var(--text-muted);"></span></div>
+          <div id="banned-list"><div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">📊 إحصائيات الإشراف</div>
+          <div id="mod-stats"><div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">🚩 التقارير والشكاوى</div>
+          <div id="reports-list">
+            <div class="empty"><div class="empty-icon">🚩</div><div class="empty-text" style="font-size:12px;">لا توجد شكاوى</div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -472,6 +608,62 @@ svg.line-chart{width:100%;height:120px;}
         </div>
         <div id="rooms-list-wrap">
           <div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div>
+          <div class="page-title">الإعدادات</div>
+          <div class="page-sub">إعدادات اللعبة والنظام</div>
+        </div>
+      </div>
+      <div class="tools-grid">
+        <div class="tool-card">
+          <div class="tool-title">🎮 إعدادات اللعبة</div>
+          <div class="tool-desc">التحكم في معاملات اللعبة</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">الحد الأقصى للاعبين في الغرفة</div>
+          <div class="range-wrap">
+            <input type="range" min="2" max="10" value="6" id="max-players-range" oninput="document.getElementById('max-players-val').textContent=this.value">
+            <span class="range-val" id="max-players-val">6</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">مهلة الغرفة (بالدقائق)</div>
+          <div class="range-wrap">
+            <input type="range" min="5" max="60" value="30" id="room-timeout-range" oninput="document.getElementById('room-timeout-val').textContent=this.value+'د'">
+            <span class="range-val" id="room-timeout-val">30د</span>
+          </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="tool-btn gold" onclick="saveGameSettings()">💾 حفظ</button>
+          </div>
+          <div class="tool-msg" id="settings-msg"></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-title">🔒 إعدادات الأمان</div>
+          <div class="tool-desc">تغيير كلمة مرور الأدمن</div>
+          <input class="tool-input" id="new-password" type="password" placeholder="كلمة مرور جديدة للأدمن">
+          <input class="tool-input" id="confirm-password" type="password" placeholder="تأكيد كلمة المرور">
+          <div class="btn-row">
+            <button class="tool-btn red" onclick="changeAdminPass()">🔑 تغيير كلمة المرور</button>
+          </div>
+          <div class="tool-msg" id="pass-msg"></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-title">🗃️ قاعدة البيانات</div>
+          <div class="tool-desc">عمليات الصيانة</div>
+          <div class="btn-row">
+            <button class="tool-btn blue" onclick="exportAllPlayers()">📤 تصدير كل اللاعبين</button>
+          </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="tool-btn red" onclick="purgeOldActivity()">🧹 حذف سجلات قديمة (+30 يوم)</button>
+          </div>
+          <div class="tool-msg" id="db-msg"></div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-title">ℹ️ معلومات النظام</div>
+          <div class="tool-desc">حالة Firebase والنظام</div>
+          <div id="sys-info"><div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div></div>
         </div>
       </div>
     </div>
@@ -559,9 +751,13 @@ window.showPage = function(id){
     if(n.getAttribute('onclick')?.includes(`'${id}'`)) n.classList.add('active');
   });
   _currentPage = id;
-  if(id==='players') renderPlayersTable(_allPlayers);
-  if(id==='charts') renderCharts();
-  if(id==='activity') loadActivity();
+  if(id==='players')    renderPlayersTable(_allPlayers);
+  if(id==='charts')     renderCharts();
+  if(id==='activity')   loadActivity();
+  if(id==='rooms')      loadRooms();
+  if(id==='moderation') loadModeration();
+  if(id==='broadcast')  checkCurrentAnn();
+  if(id==='settings')   loadSysInfo();
 };
 
 // ── INIT ──
@@ -1102,6 +1298,239 @@ window.forceEndRoom = async function(roomId){
       notify('✅ تم إنهاء الغرفة','success');
       setTimeout(loadRooms, 1500);
     }catch(e){ notify('❌ فشل','error'); }
+  });
+};
+
+
+// ── TOOLS: COPY / REWARD / UNBAN / EXPORT ──
+window.copyResults = function(){
+  const q = document.getElementById('tool-search').value.trim().toLowerCase();
+  const found = _allPlayers.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.uid||'').includes(q));
+  if(!found.length){ notify('لا توجد نتائج','error'); return; }
+  const text = found.map(p=>`${p.name} | ${p.uid} | ${p.country||'—'}`).join('\n');
+  navigator.clipboard.writeText(text).then(()=>notify('✅ تم النسخ','success'));
+};
+
+let _selectedReward = '';
+window.selectReward = function(el, type){
+  document.querySelectorAll('.reward-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  _selectedReward = type;
+};
+
+window.grantReward = async function(){
+  const uid = document.getElementById('reward-id').value.trim();
+  const msg = document.getElementById('reward-msg');
+  if(!uid){ msg.className='tool-msg error'; msg.textContent='❌ أدخل Player ID'; return; }
+  if(!_selectedReward){ msg.className='tool-msg error'; msg.textContent='❌ اختر نوع المكافأة'; return; }
+  try{
+    await push(r('admin/rewards'), { uid, type:_selectedReward, ts:Date.now(), status:'pending' });
+    await logActivity('game', `🎁 مكافأة ${_selectedReward} → ${uid}`, 'admin');
+    msg.className='tool-msg success'; msg.textContent='✅ تمت إضافة المكافأة';
+    document.getElementById('reward-id').value='';
+    _selectedReward='';
+    document.querySelectorAll('.reward-btn').forEach(b=>b.classList.remove('active'));
+    setTimeout(()=>msg.textContent='',3000);
+  }catch(e){ msg.className='tool-msg error'; msg.textContent='❌ فشل: '+e.message; }
+};
+
+window.toolUnban = async function(){
+  const uid = document.getElementById('ban-id').value.trim();
+  const msg = document.getElementById('ban-msg');
+  if(!uid){ msg.className='tool-msg error'; msg.textContent='❌ أدخل Player ID'; return; }
+  await unbanPlayer(uid);
+  document.getElementById('ban-id').value='';
+};
+
+window.exportPlayer = function(){
+  const uid = document.getElementById('del-id').value.trim();
+  if(!uid){ notify('❌ أدخل Player ID','error'); return; }
+  exportPlayerDirect(uid);
+};
+
+window.exportPlayerDirect = function(uid){
+  const p = _allPlayers.find(x=>x.uid===uid);
+  if(!p){ notify('❌ لاعب غير موجود','error'); return; }
+  const blob = new Blob([JSON.stringify(p, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `player_${uid.slice(0,8)}.json`;
+  a.click();
+  notify('✅ تم تصدير البيانات','success');
+};
+
+window.copyUID = function(uid){
+  navigator.clipboard.writeText(uid).then(()=>notify('✅ تم نسخ الـ ID','success'));
+};
+
+// ── BROADCAST ──
+window.previewAnn = function(){
+  const t = document.getElementById('ann-title')?.value || 'العنوان سيظهر هنا';
+  const b = document.getElementById('ann-body')?.value  || 'نص الإعلان سيظهر هنا...';
+  const pt = document.getElementById('ann-prev-title'); if(pt) pt.textContent = t;
+  const pb = document.getElementById('ann-prev-body');  if(pb) pb.textContent = b;
+};
+
+window.checkCurrentAnn = async function(){
+  const el = document.getElementById('ann-status-check');
+  if(!el) return;
+  try{
+    const snap = await get(r('admin/announcement'));
+    if(snap.exists()){
+      const d = snap.val();
+      el.className = 'status-banner ok';
+      el.innerHTML = `✅ يوجد إعلان نشط: <b>${esc(d.title||'—')}</b> — أُرسل ${fmtAgo(d.ts)}`;
+      if(d.title){ const t=document.getElementById('ann-title'); if(t) t.value=d.title; }
+      if(d.body) { const b=document.getElementById('ann-body');  if(b){ b.value=d.body; previewAnn(); } }
+    } else {
+      el.className = 'status-banner info';
+      el.innerHTML = 'ℹ️ لا يوجد إعلان نشط حالياً';
+    }
+  }catch(e){
+    el.className = 'status-banner warn';
+    el.innerHTML = '⚠️ فشل التحقق من الاتصال بـ Firebase';
+  }
+};
+
+window.clearAnnouncement = async function(){
+  showConfirm('حذف الإعلان', 'هل تريد حذف الإعلان الحالي؟', async ()=>{
+    try{
+      await remove(r('admin/announcement'));
+      await remove(r('announcements/current'));
+      await logActivity('announce', '🗑️ حُذف الإعلان', 'admin');
+      checkCurrentAnn();
+      notify('✅ تم حذف الإعلان','success');
+    }catch(e){ notify('❌ فشل','error'); }
+  });
+};
+
+window.sendRoomMsg = async function(){
+  const roomId  = document.getElementById('room-id-msg').value.trim();
+  const msgBody = document.getElementById('room-msg-body').value.trim();
+  const status  = document.getElementById('room-msg-status');
+  if(!roomId||!msgBody){ status.className='tool-msg error'; status.textContent='❌ أدخل الـ Room ID والرسالة'; return; }
+  try{
+    await set(r(`rooms/${roomId}/systemMsg`), { text:msgBody, ts:Date.now() });
+    status.className='tool-msg success'; status.textContent='✅ تم إرسال الرسالة للغرفة';
+    setTimeout(()=>status.textContent='',3000);
+  }catch(e){ status.className='tool-msg error'; status.textContent='❌ فشل: '+e.message; }
+};
+
+window.sendTargetedNotif = async function(){
+  const target = document.getElementById('notif-target').value;
+  const msg    = document.getElementById('notif-msg').value.trim();
+  const status = document.getElementById('notif-target-msg');
+  if(!msg){ status.className='tool-msg error'; status.textContent='❌ أدخل نص الإشعار'; return; }
+  let targets = _allPlayers;
+  if(target==='online')  targets = targets.filter(p=>(Date.now()-p.lastSeen)<120000);
+  if(target==='mobile')  targets = targets.filter(p=>p.device==='mobile');
+  if(target==='desktop') targets = targets.filter(p=>p.device!=='mobile');
+  try{
+    await set(r('admin/targeted_notif'), { msg, target, count:targets.length, ts:Date.now() });
+    await logActivity('announce', `🔔 إشعار لـ ${targets.length} لاعب (${target})`, 'admin');
+    status.className='tool-msg success'; status.textContent=`✅ تم الإرسال لـ ${targets.length} لاعب`;
+    setTimeout(()=>status.textContent='',4000);
+  }catch(e){ status.className='tool-msg error'; status.textContent='❌ فشل'; }
+};
+
+// ── MODERATION ──
+async function loadModeration(){
+  const bannedEl = document.getElementById('banned-list');
+  if(!bannedEl) return;
+  const banned = _allPlayers.filter(p=>p.banned);
+  const countEl = document.getElementById('banned-count');
+  if(countEl) countEl.textContent = `(${banned.length})`;
+  if(!banned.length){
+    bannedEl.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">لا يوجد محظورون</div></div>';
+  } else {
+    bannedEl.innerHTML=`<table><thead><tr><th>اللاعب</th><th>ID</th><th>سبب الحظر</th><th>تاريخ الحظر</th><th>إجراء</th></tr></thead><tbody>
+      ${banned.map(p=>`<tr>
+        <td><span style="font-size:16px;margin-left:6px;">${p.av||'🤴'}</span>${esc(p.name||'—')}</td>
+        <td class="td-id">${p.uid?.slice(0,8)||'—'}</td>
+        <td class="td-time">${esc(p.banReason||'—')}</td>
+        <td class="td-time">${fmtDate(p.bannedAt)}</td>
+        <td><button onclick="unbanPlayer('${p.uid}')" style="padding:4px 10px;font-size:11px;border-radius:6px;border:1px solid rgba(42,90,204,.3);background:rgba(42,90,204,.06);color:var(--sapphire-lt);cursor:pointer;">رفع الحظر</button></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+  const modEl = document.getElementById('mod-stats');
+  if(modEl){
+    const recentBans = banned.filter(p=>p.bannedAt&&(Date.now()-p.bannedAt)<86400000*7).length;
+    modEl.innerHTML=`
+      <div class="info-row"><span class="info-key">إجمالي المحظورين</span><span class="info-val" style="color:var(--crimson);">${banned.length}</span></div>
+      <div class="info-row"><span class="info-key">حظر هذا الأسبوع</span><span class="info-val">${recentBans}</span></div>
+      <div class="info-row"><span class="info-key">نسبة الحظر</span><span class="info-val">${_allPlayers.length?Math.round(banned.length/_allPlayers.length*100):0}%</span></div>`;
+  }
+}
+
+// ── SETTINGS ──
+async function loadSysInfo(){
+  const el = document.getElementById('sys-info');
+  if(!el) return;
+  try{
+    await get(r('.info'));
+    el.innerHTML=`
+      <div class="info-row"><span class="info-key">Firebase</span><span class="info-val" style="color:var(--emerald);">✅ متصل</span></div>
+      <div class="info-row"><span class="info-key">إجمالي اللاعبين</span><span class="info-val">${_allPlayers.length}</span></div>
+      <div class="info-row"><span class="info-key">قاعدة البيانات</span><span class="info-val" style="font-size:10px;">coup-online-dd079</span></div>
+      <div class="info-row"><span class="info-key">المنطقة</span><span class="info-val">us-central1</span></div>`;
+  }catch(e){
+    el.innerHTML=`<div class="info-row"><span class="info-key">Firebase</span><span class="info-val" style="color:var(--crimson);">⚠️ خطأ</span></div>`;
+  }
+}
+
+window.saveGameSettings = async function(){
+  const maxPlayers   = document.getElementById('max-players-range')?.value;
+  const roomTimeout  = document.getElementById('room-timeout-range')?.value;
+  const msg = document.getElementById('settings-msg');
+  try{
+    await set(r('admin/settings'),{ maxPlayersPerRoom:parseInt(maxPlayers), roomTimeoutMin:parseInt(roomTimeout), updatedAt:Date.now() });
+    msg.className='tool-msg success'; msg.textContent='✅ تم حفظ الإعدادات';
+    setTimeout(()=>msg.textContent='',3000);
+  }catch(e){ msg.className='tool-msg error'; msg.textContent='❌ فشل الحفظ'; }
+};
+
+window.changeAdminPass = function(){
+  const np = document.getElementById('new-password').value;
+  const cp = document.getElementById('confirm-password').value;
+  const msg = document.getElementById('pass-msg');
+  if(!np||np.length<8){ msg.className='tool-msg error'; msg.textContent='❌ كلمة المرور يجب أن تكون 8 أحرف على الأقل'; return; }
+  if(np!==cp){ msg.className='tool-msg error'; msg.textContent='❌ كلمتا المرور غير متطابقتين'; return; }
+  ADMIN_PASS=np;
+  localStorage.setItem(ADMIN_PASS_KEY, np);
+  msg.className='tool-msg success'; msg.textContent='✅ تم تغيير كلمة المرور';
+  document.getElementById('new-password').value='';
+  document.getElementById('confirm-password').value='';
+  setTimeout(()=>msg.textContent='',3000);
+};
+
+window.exportAllPlayers = function(){
+  const blob = new Blob([JSON.stringify(_allPlayers,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `all_players_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  notify('✅ تم تصدير بيانات جميع اللاعبين','success');
+};
+
+window.purgeOldActivity = async function(){
+  showConfirm('حذف السجلات القديمة','سيتم حذف جميع سجلات النشاط الأقدم من 30 يوماً.', async ()=>{
+    const msg = document.getElementById('db-msg');
+    try{
+      const snap = await get(r('admin/activity'));
+      if(snap.exists()){
+        const cutoff = Date.now()-30*86400000;
+        const updates={};
+        Object.entries(snap.val()).forEach(([k,v])=>{ if(v.ts<cutoff) updates[k]=null; });
+        if(Object.keys(updates).length){
+          await update(r('admin/activity'), updates);
+          msg.className='tool-msg success'; msg.textContent=`✅ تم حذف ${Object.keys(updates).length} سجل`;
+        } else {
+          msg.className='tool-msg success'; msg.textContent='✅ لا توجد سجلات قديمة';
+        }
+        setTimeout(()=>msg.textContent='',3000);
+      }
+    }catch(e){ msg.className='tool-msg error'; msg.textContent='❌ فشل'; }
   });
 };
 
