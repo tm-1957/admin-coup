@@ -232,6 +232,17 @@ textarea.tool-input{resize:vertical;min-height:100px;}
 .range-wrap{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .range-wrap input[type=range]{flex:1;accent-color:var(--gold);}
 .range-val{font-family:var(--mono);font-size:12px;color:var(--gold);min-width:36px;text-align:center;}
+.room-action-btn{width:100%;display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:10px;border:1.5px solid var(--border2);background:var(--surface2);cursor:pointer;transition:.15s;text-align:right;}
+.room-action-btn:hover{background:var(--surface);border-color:var(--border);}
+.room-action-btn.blue{border-color:rgba(42,90,204,.25);background:rgba(42,90,204,.04);}
+.room-action-btn.blue:hover{background:rgba(42,90,204,.1);}
+.room-action-btn.gold{border-color:rgba(201,168,76,.25);background:rgba(201,168,76,.04);}
+.room-action-btn.gold:hover{background:rgba(201,168,76,.1);}
+.room-action-btn.red{border-color:rgba(176,48,32,.25);background:rgba(176,48,32,.04);}
+.room-action-btn.red:hover{background:rgba(176,48,32,.1);}
+.room-action-btn .ra-icon{font-size:22px;min-width:32px;text-align:center;}
+.room-action-btn .ra-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px;}
+.room-action-btn .ra-sub{font-size:11px;color:var(--text-muted);}
 .tool-msg{font-size:12px;margin-top:10px;color:var(--emerald-lt);min-height:18px;font-family:var(--mono);}
 
 /* ── NOTIFICATION ── */
@@ -1200,6 +1211,68 @@ window.deletePlayerData = async function(uid){
 // ══════════════════════════════════════════════════
 // ROOMS PAGE
 // ══════════════════════════════════════════════════
+// غرف مخفية محلياً (بدون حذف من Firebase)
+const _hiddenRooms = new Set();
+
+window.openRoomActions = function(roomId){
+  // جيب بيانات الغرفة من _roomsCache
+  const rm = _roomsCache?.[roomId] || {};
+  const game = rm.game || {};
+  const status = game.status || rm.status || 'waiting';
+  const isEnded = status==='ended';
+  const isPlaying = status==='playing';
+
+  const t = document.getElementById('modal-title');
+  const b = document.getElementById('modal-body');
+  const a = document.getElementById('modal-actions');
+  if(!t||!b||!a) return;
+
+  t.innerHTML = `<span style="font-family:var(--mono);font-size:13px;color:var(--gold);">⚙️ ${roomId}</span>`;
+
+  // بناء قائمة الإجراءات
+  const actions = [];
+
+  if(!isEnded){
+    actions.push(`<button class="room-action-btn blue" onclick="closeModal();sendRoomMsgPrompt('${roomId}')">
+      <span class="ra-icon">💬</span>
+      <div><div class="ra-title">إرسال رسالة</div><div class="ra-sub">تظهر للاعبين في الغرفة</div></div>
+    </button>`);
+    actions.push(`<button class="room-action-btn gold" onclick="closeModal();kickAllFromRoom('${roomId}')">
+      <span class="ra-icon">👟</span>
+      <div><div class="ra-title">إخراج جميع اللاعبين</div><div class="ra-sub">إخراج قسري من الغرفة</div></div>
+    </button>`);
+    actions.push(`<button class="room-action-btn red" onclick="closeModal();forceEndRoom('${roomId}')">
+      <span class="ra-icon">⏹</span>
+      <div><div class="ra-title">إنهاء اللعبة</div><div class="ra-sub">إنهاء قسري مع إعلام اللاعبين</div></div>
+    </button>`);
+  }
+
+  actions.push(`<button class="room-action-btn red" onclick="closeModal();deleteRoom('${roomId}')">
+    <span class="ra-icon">🗑️</span>
+    <div><div class="ra-title">حذف من Firebase</div><div class="ra-sub">حذف كامل لبيانات الغرفة</div></div>
+  </button>`);
+
+  actions.push(`<button class="room-action-btn" onclick="closeModal();hideRoom('${roomId}')">
+    <span class="ra-icon">🙈</span>
+    <div><div class="ra-title">إخفاء من القائمة</div><div class="ra-sub">يختفي من القائمة فقط بدون حذف</div></div>
+  </button>`);
+
+  b.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;">${actions.join('')}</div>`;
+  a.innerHTML = `<button class="tool-btn" style="background:var(--surface2);border-color:var(--border2);color:var(--text-dim);" onclick="closeModal()">إغلاق</button>`;
+  document.getElementById('overlay').classList.add('open');
+};
+
+window.hideRoom = function(roomId){
+  _hiddenRooms.add(roomId);
+  const el = document.querySelector(`[data-room-id="${roomId}"]`);
+  if(el){ el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),300); }
+  const cnt = document.getElementById('rooms-count');
+  notify('✅ تم إخفاء الغرفة من القائمة','success');
+};
+
+// كاش للغرف
+let _roomsCache = {};
+
 window.loadRooms = async function(){
   const onlineWrap  = document.getElementById('online-players-wrap');
   const roomsWrap   = document.getElementById('rooms-list-wrap');
@@ -1251,7 +1324,9 @@ window.loadRooms = async function(){
       return;
     }
 
-    const allRooms = Object.entries(snap.val());
+    const allRoomsRaw = snap.val();
+    _roomsCache = allRoomsRaw;
+    const allRooms = Object.entries(allRoomsRaw);
 
     // ── إحصائيات سريعة
     const playing = allRooms.filter(([,rm])=>rm.status==='playing'||(rm.game?.status==='playing')).length;
@@ -1286,6 +1361,14 @@ window.loadRooms = async function(){
     if(filterVal==='playing') filtered = allRooms.filter(([,rm])=>rm.status==='playing'||rm.game?.status==='playing');
     if(filterVal==='waiting') filtered = allRooms.filter(([,rm])=>rm.status==='waiting'||(!rm.status&&rm.players&&rm.game?.status!=='ended'));
     if(filterVal==='ended')   filtered = allRooms.filter(([,rm])=>rm.status==='ended'||rm.game?.status==='ended');
+
+    // ── ترتيب: الأقدم أولاً (أصغر timestamp في الأعلى)
+    filtered = filtered.filter(([id])=>!_hiddenRooms.has(id));
+    filtered.sort(([,a],[,b])=>{
+      const ta = a.game?.startedAt || a.createdAt || 0;
+      const tb = b.game?.startedAt || b.createdAt || 0;
+      return ta - tb;
+    });
 
     document.getElementById('rooms-count').textContent = `(${filtered.length})`;
 
@@ -1350,7 +1433,7 @@ window.loadRooms = async function(){
           bots.length    ? `🤖 بوتات: ${bots.length}` : null,
         ].filter(Boolean).join(' &nbsp;·&nbsp; ');
 
-        return `<div style="background:var(--surface);border:1px solid ${cardBorder};border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);position:relative;">
+        return `<div onclick="openRoomActions('${roomId}')" data-room-id="${roomId}" style="background:var(--surface);border:1px solid ${cardBorder};border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);position:relative;cursor:pointer;transition:transform .15s,box-shadow .15s;" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.4)'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
           <!-- شريط علوي ملون -->
           <div style="height:3px;background:${cardAccent};"></div>
           <!-- رأس البطاقة -->
@@ -1359,8 +1442,9 @@ window.loadRooms = async function(){
               <div style="font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:3px;">${roomId}</div>
               ${statusBadge}
             </div>
-            <div style="text-align:left;font-size:10px;color:var(--text-muted);">
-              ${detailsRow}
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="text-align:left;font-size:10px;color:var(--text-muted);">${detailsRow}</div>
+              <span style="font-size:16px;color:var(--text-muted);opacity:.5;">›</span>
             </div>
           </div>
           <!-- الفائز (إذا انتهت) -->
@@ -1377,16 +1461,8 @@ window.loadRooms = async function(){
             <div style="font-size:10px;color:var(--text-muted);letter-spacing:1px;margin-bottom:8px;font-family:var(--mono);">اللاعبون (${players.length})</div>
             ${playersList || '<div style="font-size:12px;color:var(--text-muted);">لا يوجد لاعبون</div>'}
           </div>
-          <!-- أزرار التحكم -->
-          ${!isEnded ? `
-          <div style="padding:10px 16px;border-top:1px solid var(--border2);display:flex;gap:8px;flex-wrap:wrap;background:var(--surface2);">
-            <button onclick="sendRoomMsgPrompt('${roomId}')" style="padding:5px 12px;font-size:11px;border-radius:6px;border:1px solid rgba(42,90,204,.3);background:rgba(42,90,204,.06);color:var(--sapphire-lt);cursor:pointer;flex:1;">💬 رسالة</button>
-            <button onclick="kickAllFromRoom('${roomId}')" style="padding:5px 12px;font-size:11px;border-radius:6px;border:1px solid rgba(201,168,76,.3);background:rgba(201,168,76,.06);color:var(--gold);cursor:pointer;flex:1;">👟 إخراج الكل</button>
-            <button onclick="forceEndRoom('${roomId}')" style="padding:5px 12px;font-size:11px;border-radius:6px;border:1px solid rgba(176,48,32,.3);background:rgba(176,48,32,.06);color:var(--crimson);cursor:pointer;flex:1;">⏹ إنهاء</button>
-          </div>` : `
-          <div style="padding:10px 16px;border-top:1px solid var(--border2);display:flex;gap:8px;background:var(--surface2);">
-            <button onclick="deleteRoom('${roomId}')" style="padding:5px 12px;font-size:11px;border-radius:6px;border:1px solid rgba(176,48,32,.2);background:rgba(176,48,32,.04);color:var(--crimson);cursor:pointer;">🗑️ حذف الغرفة</button>
-          </div>`}
+          <!-- تلميح -->
+          <div style="padding:8px 16px;border-top:1px solid var(--border2);background:var(--surface2);font-size:10px;color:var(--text-muted);text-align:center;">اضغط للتحكم في الغرفة</div>
         </div>`;
       }).join('')}
     </div>`;
