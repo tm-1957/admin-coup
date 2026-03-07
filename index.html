@@ -1197,9 +1197,9 @@ window.openRoomActions = async function(roomId){
     <div><div class="ra-title">حذف من Firebase</div><div class="ra-sub">حذف كامل ونهائي لبيانات الغرفة</div></div>
   </button>`);
 
-  actions.push(`<button class="room-action-btn" onclick="closeModal();hideRoom('${roomId}')">
+  actions.push(`<button class="room-action-btn red" onclick="closeModal();setTimeout(()=>hideRoom('${roomId}'),50)">
     <span class="ra-icon">🙈</span>
-    <div><div class="ra-title">إخفاء من القائمة</div><div class="ra-sub">يختفي من القائمة فقط بدون حذف</div></div>
+    <div><div class="ra-title">إخفاء وحذف</div><div class="ra-sub">يختفي فوراً ويُحذف من Firebase</div></div>
   </button>`);
 
   b.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;">${actions.join('')}</div>`;
@@ -1207,11 +1207,17 @@ window.openRoomActions = async function(roomId){
   document.getElementById('overlay').classList.add('open');
 };
 
-window.hideRoom = function(roomId){
-  _hiddenRooms.add(roomId);
+window.hideRoom = async function(roomId){
+  // أخفِ البطاقة بصرياً فوراً
   const el = document.querySelector(`[data-room-id="${roomId}"]`);
   if(el){ el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),300); }
-  notify('✅ تم إخفاء الغرفة من القائمة','success');
+  // ثم احذف من Firebase نهائياً
+  try{
+    await remove(r(`rooms/${roomId}`));
+    if(_roomsCache && _roomsCache[roomId]) delete _roomsCache[roomId];
+    await logActivity('game', `🙈 إخفاء/حذف غرفة: ${roomId}`, 'admin');
+    notify('✅ تم حذف الغرفة نهائياً','success');
+  }catch(e){ notify('❌ فشل الحذف: '+e.message,'error'); }
 };
 
 window.loadRooms = async function(){
