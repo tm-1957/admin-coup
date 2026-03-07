@@ -1237,17 +1237,17 @@ window.openRoomActions = function(roomId){
       <span class="ra-icon">💬</span>
       <div><div class="ra-title">إرسال رسالة</div><div class="ra-sub">تظهر للاعبين في الغرفة</div></div>
     </button>`);
-    actions.push(`<button class="room-action-btn gold" onclick="closeModal();kickAllFromRoom('${roomId}')">
+    actions.push(`<button class="room-action-btn gold" onclick="closeModal();setTimeout(()=>kickAllFromRoom('${roomId}'),50)">
       <span class="ra-icon">👟</span>
       <div><div class="ra-title">إخراج جميع اللاعبين</div><div class="ra-sub">إخراج قسري من الغرفة</div></div>
     </button>`);
-    actions.push(`<button class="room-action-btn red" onclick="closeModal();forceEndRoom('${roomId}')">
+    actions.push(`<button class="room-action-btn red" onclick="closeModal();setTimeout(()=>forceEndRoom('${roomId}'),50)">
       <span class="ra-icon">⏹</span>
       <div><div class="ra-title">إنهاء اللعبة</div><div class="ra-sub">إنهاء قسري مع إعلام اللاعبين</div></div>
     </button>`);
   }
 
-  actions.push(`<button class="room-action-btn red" onclick="closeModal();deleteRoom('${roomId}')">
+  actions.push(`<button class="room-action-btn red" onclick="closeModal();setTimeout(()=>deleteRoom('${roomId}'),50)">
     <span class="ra-icon">🗑️</span>
     <div><div class="ra-title">حذف من Firebase</div><div class="ra-sub">حذف كامل لبيانات الغرفة</div></div>
   </button>`);
@@ -1367,7 +1367,7 @@ window.loadRooms = async function(){
     filtered.sort(([,a],[,b])=>{
       const ta = a.game?.startedAt || a.createdAt || 0;
       const tb = b.game?.startedAt || b.createdAt || 0;
-      return ta - tb;
+      return tb - ta;  // الأحدث فوق
     });
 
     document.getElementById('rooms-count').textContent = `(${filtered.length})`;
@@ -1775,12 +1775,14 @@ async function logActivity(type, msg, uid){
 }
 
 // ── MODAL ──
+let _pendingConfirmCb = null;
 window.showConfirm = function(title, body, onOk){
+  _pendingConfirmCb = onOk;
   document.getElementById('modal-title').innerHTML = title;
   document.getElementById('modal-body').innerHTML  = body;
   document.getElementById('modal-actions').innerHTML = `
     <button class="tool-btn" style="background:rgba(255,255,255,.05);border-color:var(--border);color:var(--text-dim);" onclick="closeModal()">إلغاء</button>
-    <button class="tool-btn red" onclick="closeModal();(${onOk.toString()})()">تأكيد</button>`;
+    <button class="tool-btn red" onclick="closeModal();if(_pendingConfirmCb){_pendingConfirmCb();_pendingConfirmCb=null;}">تأكيد</button>`;
   document.getElementById('overlay').classList.add('open');
 };
 window.closeModal = ()=>document.getElementById('overlay').classList.remove('open');
