@@ -588,27 +588,38 @@ svg.line-chart{width:100%;height:120px;}
       <div class="page-header">
         <div>
           <div class="page-title">الغرف الحية <span class="live-dot"></span></div>
-          <div class="page-sub">اللاعبون المتواجدون والغرف النشطة الآن</div>
+          <div class="page-sub">متابعة كاملة للغرف النشطة والمنتهية واللاعبين المتصلين</div>
         </div>
-        <button class="tool-btn gold" onclick="loadRooms()" style="padding:8px 16px;font-size:11px;">↻ تحديث</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="rooms-filter" class="search-inp" onchange="loadRooms()" style="width:130px;">
+            <option value="all">كل الغرف</option>
+            <option value="playing">🟢 تلعب الآن</option>
+            <option value="waiting">⏳ انتظار</option>
+            <option value="ended">✅ منتهية</option>
+          </select>
+          <button class="tool-btn gold" onclick="loadRooms()" style="padding:8px 16px;font-size:11px;">↻ تحديث</button>
+        </div>
       </div>
-      <!-- Online Players -->
+
+      <!-- إحصائيات سريعة -->
+      <div id="rooms-stats-bar" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;"></div>
+
+      <!-- اللاعبون المتصلون -->
       <div class="table-wrap" style="margin-bottom:20px;">
         <div class="table-header">
-          <div class="table-title">👥 اللاعبون المتواجدون <span id="online-count" style="font-family:var(--mono);font-size:11px;color:var(--text-muted);"></span></div>
+          <div class="table-title">👥 اللاعبون المتواجدون الآن <span id="online-count" style="font-family:var(--mono);font-size:11px;color:var(--text-muted);"></span></div>
         </div>
         <div id="online-players-wrap">
           <div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>
         </div>
       </div>
-      <!-- Active Rooms -->
-      <div class="table-wrap">
-        <div class="table-header">
-          <div class="table-title">🎮 الغرف النشطة <span id="rooms-count" style="font-family:var(--mono);font-size:11px;color:var(--text-muted);"></span></div>
-        </div>
-        <div id="rooms-list-wrap">
-          <div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>
-        </div>
+
+      <!-- بطاقات الغرف -->
+      <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-family:var(--serif);font-size:14px;color:var(--gold);">🎮 الغرف <span id="rooms-count" style="font-family:var(--mono);font-size:11px;color:var(--text-muted);"></span></div>
+      </div>
+      <div id="rooms-list-wrap">
+        <div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>
       </div>
     </div>
 
@@ -1190,81 +1201,230 @@ window.deletePlayerData = async function(uid){
 // ROOMS PAGE
 // ══════════════════════════════════════════════════
 window.loadRooms = async function(){
-  const onlineWrap = document.getElementById('online-players-wrap');
-  const roomsWrap  = document.getElementById('rooms-list-wrap');
+  const onlineWrap  = document.getElementById('online-players-wrap');
+  const roomsWrap   = document.getElementById('rooms-list-wrap');
+  const statsBar    = document.getElementById('rooms-stats-bar');
   if(!onlineWrap||!roomsWrap) return;
+
+  const filterVal = document.getElementById('rooms-filter')?.value || 'all';
+  const now = Date.now();
+
   onlineWrap.innerHTML = '<div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>';
   roomsWrap.innerHTML  = '<div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>';
 
-  const now = Date.now();
-
-  // ── Online Players (active in last 2 min)
-  const online = _allPlayers.filter(p => (now - p.lastSeen) < 120000 && !p.banned);
+  // ══════════════════════════════════════════════
+  // اللاعبون المتصلون (نشط خلال آخر دقيقتين)
+  // ══════════════════════════════════════════════
+  const online = _allPlayers.filter(p=>(now-p.lastSeen)<120000 && !p.banned);
   document.getElementById('online-count').textContent = `(${online.length})`;
   if(!online.length){
     onlineWrap.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد لاعبون متصلون حالياً</div></div>';
   } else {
     onlineWrap.innerHTML = `<table>
-      <thead><tr><th>اللاعب</th><th>ID</th><th>الجهاز</th><th>الدولة</th><th>آخر نشاط</th><th>إجراء</th></tr></thead>
+      <thead><tr><th>اللاعب</th><th>ID</th><th>الجهاز</th><th>الدولة</th><th>الجلسات</th><th>وقت اللعب</th><th>آخر نشاط</th><th>إجراء</th></tr></thead>
       <tbody>
         ${online.map(p=>`<tr>
           <td><span style="font-size:18px;margin-left:6px;">${p.av||'🤴'}</span><span class="td-name">${esc(p.name||'—')}</span></td>
           <td class="td-id" style="cursor:pointer;color:var(--gold);" onclick="navigator.clipboard.writeText('${p.uid}').then(()=>notify('✅ نُسخ','success'))" title="انقر للنسخ">${p.uid?.slice(0,10)||'—'}</td>
-          <td><span class="badge ${p.device==='mobile'?'badge-mobile':'badge-desktop'}">${p.device==='mobile'?'📱':'💻'}</span></td>
+          <td><span class="badge ${p.device==='mobile'?'badge-mobile':'badge-desktop'}">${p.device==='mobile'?'📱 جوال':'💻 كمبيوتر'}</span></td>
           <td class="td-time">${p.country||'—'}</td>
+          <td class="td-num">${p.sessions||0}</td>
+          <td class="td-time">${fmtMs(p.totalPlayMs)}</td>
           <td class="td-time">${fmtAgo(p.lastSeen)}</td>
-          <td>
-            <button onclick="banPlayer('${p.uid}','إزعاج')" style="padding:3px 9px;font-size:10px;border-radius:5px;border:1px solid rgba(176,48,32,.3);background:rgba(176,48,32,.06);color:var(--crimson);cursor:pointer;margin-left:4px;">🚫 حظر</button>
-            <button onclick="showPlayerDetail('${p.uid}')" style="padding:3px 9px;font-size:10px;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-dim);cursor:pointer;">تفاصيل</button>
+          <td style="display:flex;gap:4px;">
+            <button onclick="banPlayer('${p.uid}','إزعاج')" style="padding:3px 9px;font-size:10px;border-radius:5px;border:1px solid rgba(176,48,32,.3);background:rgba(176,48,32,.06);color:var(--crimson);cursor:pointer;">🚫</button>
+            <button onclick="showPlayerDetail('${p.uid}')" style="padding:3px 9px;font-size:10px;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-dim);cursor:pointer;">👤</button>
           </td>
         </tr>`).join('')}
       </tbody></table>`;
   }
 
-  // ── Active Rooms
+  // ══════════════════════════════════════════════
+  // الغرف
+  // ══════════════════════════════════════════════
   try{
     const snap = await get(r('rooms'));
     if(!snap.exists()){
       document.getElementById('rooms-count').textContent = '(0)';
-      roomsWrap.innerHTML = '<div class="empty"><div class="empty-icon">🎮</div><div class="empty-text">لا توجد غرف نشطة</div></div>';
+      if(statsBar) statsBar.innerHTML = '';
+      roomsWrap.innerHTML = '<div class="empty"><div class="empty-icon">🎮</div><div class="empty-text">لا توجد غرف</div></div>';
       return;
     }
+
     const allRooms = Object.entries(snap.val());
-    // فلتر الغرف النشطة فقط (أُنشئت خلال آخر ساعة)
-    const activeRooms = allRooms.filter(([id,rm])=>{
-      const hasPlayers = rm.players && Object.keys(rm.players).length > 0;
-      const isRecent   = rm.startedAt ? (now - rm.startedAt) < 3600000 : true;
-      return hasPlayers || rm.status==='playing';
-    });
-    document.getElementById('rooms-count').textContent = `(${activeRooms.length})`;
-    if(!activeRooms.length){
-      roomsWrap.innerHTML = '<div class="empty"><div class="empty-icon">🎮</div><div class="empty-text">لا توجد غرف نشطة</div></div>';
+
+    // ── إحصائيات سريعة
+    const playing = allRooms.filter(([,rm])=>rm.status==='playing'||(rm.game?.status==='playing')).length;
+    const ended   = allRooms.filter(([,rm])=>rm.status==='ended'||(rm.game?.status==='ended')).length;
+    const waiting = allRooms.filter(([,rm])=>rm.status==='waiting'||(!rm.status&&rm.players)).length;
+    const totalPlayers = allRooms.reduce((s,[,rm])=>s+(rm.players?Object.keys(rm.players).length:0),0);
+
+    if(statsBar) statsBar.innerHTML = `
+      <div class="stat-card" style="--accent:var(--emerald-lt);padding:14px 16px;">
+        <div class="stat-icon" style="font-size:18px;margin-bottom:6px;">🟢</div>
+        <div class="stat-val" style="font-size:24px;">${playing}</div>
+        <div class="stat-lbl">تلعب الآن</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--gold);padding:14px 16px;">
+        <div class="stat-icon" style="font-size:18px;margin-bottom:6px;">⏳</div>
+        <div class="stat-val" style="font-size:24px;">${waiting}</div>
+        <div class="stat-lbl">في الانتظار</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--text-muted);padding:14px 16px;">
+        <div class="stat-icon" style="font-size:18px;margin-bottom:6px;">✅</div>
+        <div class="stat-val" style="font-size:24px;">${ended}</div>
+        <div class="stat-lbl">منتهية</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--sapphire-lt);padding:14px 16px;">
+        <div class="stat-icon" style="font-size:18px;margin-bottom:6px;">👥</div>
+        <div class="stat-val" style="font-size:24px;">${totalPlayers}</div>
+        <div class="stat-lbl">إجمالي اللاعبين</div>
+      </div>`;
+
+    // ── فلترة
+    let filtered = allRooms;
+    if(filterVal==='playing') filtered = allRooms.filter(([,rm])=>rm.status==='playing'||rm.game?.status==='playing');
+    if(filterVal==='waiting') filtered = allRooms.filter(([,rm])=>rm.status==='waiting'||(!rm.status&&rm.players&&rm.game?.status!=='ended'));
+    if(filterVal==='ended')   filtered = allRooms.filter(([,rm])=>rm.status==='ended'||rm.game?.status==='ended');
+
+    document.getElementById('rooms-count').textContent = `(${filtered.length})`;
+
+    if(!filtered.length){
+      roomsWrap.innerHTML = '<div class="empty"><div class="empty-icon">🎮</div><div class="empty-text">لا توجد غرف في هذه الفئة</div></div>';
       return;
     }
-    roomsWrap.innerHTML = `<table>
-      <thead><tr><th>Room ID</th><th>الحالة</th><th>اللاعبون</th><th>الدور</th><th>وقت البدء</th><th>إجراءات</th></tr></thead>
-      <tbody>
-        ${activeRooms.map(([roomId,rm])=>{
-          const players = rm.players ? Object.values(rm.players) : [];
-          const playerNames = players.map(p=>p.name||'؟').join('، ');
-          const status = rm.status==='playing' ? '<span class="badge badge-online">يلعب</span>' : '<span class="badge badge-desktop">انتظار</span>';
-          const turn   = rm.turn !== undefined ? `دور ${rm.turn+1}` : '—';
-          return `<tr>
-            <td class="td-id" style="font-size:11px;">${roomId}</td>
-            <td>${status}</td>
-            <td class="td-time" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;">${esc(playerNames)||'—'}</td>
-            <td class="td-num">${turn}</td>
-            <td class="td-time">${fmtAgo(rm.startedAt)}</td>
-            <td>
-              <button onclick="sendRoomMsgPrompt('${roomId}')" style="padding:3px 9px;font-size:10px;border-radius:5px;border:1px solid rgba(42,90,204,.3);background:rgba(42,90,204,.06);color:var(--sapphire-lt);cursor:pointer;margin-left:4px;">💬 رسالة</button>
-              <button onclick="forceEndRoom('${roomId}')" style="padding:3px 9px;font-size:10px;border-radius:5px;border:1px solid rgba(176,48,32,.3);background:rgba(176,48,32,.06);color:var(--crimson);cursor:pointer;">⏹ إنهاء</button>
-            </td>
-          </tr>`;
-        }).join('')}
-      </tbody></table>`;
+
+    // ── بطاقات الغرف
+    roomsWrap.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;">
+      ${filtered.map(([roomId, rm])=>{
+        const game     = rm.game || {};
+        const players  = rm.players ? Object.values(rm.players) : (game.players||[]);
+        const humans   = players.filter(p=>!p.isBot);
+        const bots     = players.filter(p=>p.isBot);
+        const status   = game.status || rm.status || 'waiting';
+        const winnerId = game.winnerId;
+        const winner   = players.find(p=>p.id===winnerId);
+        const isPlaying= status==='playing';
+        const isEnded  = status==='ended';
+        const isWaiting= !isPlaying && !isEnded;
+        const startTs  = game.startedAt || rm.createdAt;
+        const duration = startTs ? Math.round((now - startTs)/60000) : null;
+        const turn     = game.turn !== undefined ? game.turn+1 : null;
+        const treasury = game.treasury;
+
+        // لون البطاقة حسب الحالة
+        const cardBorder = isPlaying ? 'rgba(40,160,90,.3)' : isEnded ? 'rgba(160,120,40,.2)' : 'rgba(42,90,204,.2)';
+        const cardAccent = isPlaying ? 'var(--emerald-lt)' : isEnded ? 'var(--gold)' : 'var(--sapphire-lt)';
+        const statusBadge = isPlaying
+          ? `<span style="background:rgba(40,160,90,.12);color:var(--emerald-lt);border:1px solid rgba(40,160,90,.3);padding:2px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);">🟢 يلعب</span>`
+          : isEnded
+          ? `<span style="background:rgba(160,120,40,.1);color:var(--gold);border:1px solid rgba(160,120,40,.25);padding:2px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);">✅ منتهية</span>`
+          : `<span style="background:rgba(42,90,204,.08);color:var(--sapphire-lt);border:1px solid rgba(42,90,204,.2);padding:2px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);">⏳ انتظار</span>`;
+
+        // عرض اللاعبين
+        const playersList = players.map(p=>{
+          const isWinner   = p.id===winnerId;
+          const isElim     = p.eliminated;
+          const isCurTurn  = game.turn!==undefined && game.players?.[game.turn]?.id===p.id;
+          const coins      = p.coins!==undefined ? p.coins : '?';
+          const cardsLeft  = p.cards ? p.cards.filter((_,i)=>!p.revealed?.[i]).length : (p.eliminated?0:2);
+          return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:${isWinner?'rgba(201,168,76,.1)':isElim?'rgba(176,48,32,.05)':isCurTurn?'rgba(40,160,90,.06)':'rgba(255,255,255,.02)'};border:1px solid ${isWinner?'rgba(201,168,76,.3)':isElim?'rgba(176,48,32,.12)':isCurTurn?'rgba(40,160,90,.2)':'transparent'};margin-bottom:4px;">
+            <span style="font-size:18px;">${p.av||'🤴'}</span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:12px;font-weight:500;color:${isWinner?'var(--gold)':isElim?'var(--text-muted)':'var(--text)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                ${isWinner?'👑 ':''}${isElim?'💀 ':''}${isCurTurn&&!isEnded?'▶ ':''}${esc(p.name||'—')}${p.isBot?' 🤖':''}
+              </div>
+              <div style="font-size:10px;color:var(--text-muted);font-family:var(--mono);">${coins} 🪙 · ${cardsLeft} 🃏</div>
+            </div>
+            ${isElim?'<span style="font-size:9px;color:var(--crimson);font-family:var(--mono);">خرج</span>':''}
+          </div>`;
+        }).join('');
+
+        // صف التفاصيل
+        const detailsRow = [
+          startTs        ? `⏱ بدأت: ${fmtAgo(startTs)}` : null,
+          duration!==null? `⏳ المدة: ${duration}د` : null,
+          turn           ? `🔄 الدور ${turn}` : null,
+          treasury!==undefined ? `🏦 الخزينة: ${treasury}` : null,
+          humans.length  ? `👤 بشر: ${humans.length}` : null,
+          bots.length    ? `🤖 بوتات: ${bots.length}` : null,
+        ].filter(Boolean).join(' &nbsp;·&nbsp; ');
+
+        return `<div style="background:var(--surface);border:1px solid ${cardBorder};border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);position:relative;">
+          <!-- شريط علوي ملون -->
+          <div style="height:3px;background:${cardAccent};"></div>
+          <!-- رأس البطاقة -->
+          <div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border2);">
+            <div>
+              <div style="font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:3px;">${roomId}</div>
+              ${statusBadge}
+            </div>
+            <div style="text-align:left;font-size:10px;color:var(--text-muted);">
+              ${detailsRow}
+            </div>
+          </div>
+          <!-- الفائز (إذا انتهت) -->
+          ${isEnded && winner ? `
+          <div style="padding:10px 16px;background:rgba(201,168,76,.06);border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px;">
+            <span style="font-size:24px;">${winner.av||'🤴'}</span>
+            <div>
+              <div style="font-size:10px;color:var(--text-muted);font-family:var(--mono);">الفائز</div>
+              <div style="font-size:14px;font-weight:600;color:var(--gold);">👑 ${esc(winner.name||'—')}</div>
+            </div>
+          </div>` : ''}
+          <!-- اللاعبون -->
+          <div style="padding:12px 16px;">
+            <div style="font-size:10px;color:var(--text-muted);letter-spacing:1px;margin-bottom:8px;font-family:var(--mono);">اللاعبون (${players.length})</div>
+            ${playersList || '<div style="font-size:12px;color:var(--text-muted);">لا يوجد لاعبون</div>'}
+          </div>
+          <!-- أزرار التحكم -->
+          ${!isEnded ? `
+          <div style="padding:10px 16px;border-top:1px solid var(--border2);display:flex;gap:8px;flex-wrap:wrap;background:var(--surface2);">
+            <button onclick="sendRoomMsgPrompt('${roomId}')" style="padding:5px 12px;font-size:11px;border-radius:6px;border:1px solid rgba(42,90,204,.3);background:rgba(42,90,204,.06);color:var(--sapphire-lt);cursor:pointer;flex:1;">💬 رسالة</button>
+            <button onclick="kickAllFromRoom('${roomId}')" style="padding:5px 12px;font-size:11px;border-radius:6px;border:1px solid rgba(201,168,76,.3);background:rgba(201,168,76,.06);color:var(--gold);cursor:pointer;flex:1;">👟 إخراج الكل</button>
+            <button onclick="forceEndRoom('${roomId}')" style="padding:5px 12px;font-size:11px;border-radius:6px;border:1px solid rgba(176,48,32,.3);background:rgba(176,48,32,.06);color:var(--crimson);cursor:pointer;flex:1;">⏹ إنهاء</button>
+          </div>` : `
+          <div style="padding:10px 16px;border-top:1px solid var(--border2);display:flex;gap:8px;background:var(--surface2);">
+            <button onclick="deleteRoom('${roomId}')" style="padding:5px 12px;font-size:11px;border-radius:6px;border:1px solid rgba(176,48,32,.2);background:rgba(176,48,32,.04);color:var(--crimson);cursor:pointer;">🗑️ حذف الغرفة</button>
+          </div>`}
+        </div>`;
+      }).join('')}
+    </div>`;
+
   }catch(e){
-    roomsWrap.innerHTML = '<div class="empty"><div class="empty-text">خطأ في تحميل الغرف</div></div>';
+    console.error(e);
+    roomsWrap.innerHTML = `<div class="empty"><div class="empty-text">خطأ في تحميل الغرف: ${e.message}</div></div>`;
   }
+};
+
+window.kickAllFromRoom = async function(roomId){
+  showConfirm('👟 إخراج الكل', `هل تريد إخراج جميع لاعبي الغرفة <b>${roomId}</b>؟`, async ()=>{
+    try{
+      const snap = await get(r(`rooms/${roomId}/players`));
+      if(snap.exists()){
+        const updates = {};
+        Object.keys(snap.val()).forEach(pid=>{
+          updates[`rooms/${roomId}/adminKick/${pid}`] = { ts:Date.now(), reason:'admin kick' };
+        });
+        await update(r('/'), updates);
+      }
+      await set(r(`rooms/${roomId}/systemMsg`), { text:'⚠️ تم إخراج جميع اللاعبين من قِبَل الإدارة.', ts:Date.now() });
+      await logActivity('game', `👟 إخراج كل لاعبي الغرفة: ${roomId}`, 'admin');
+      notify('✅ تم إخراج الكل','success');
+      setTimeout(loadRooms, 1500);
+    }catch(e){ notify('❌ فشل','error'); }
+  });
+};
+
+window.deleteRoom = async function(roomId){
+  showConfirm('🗑️ حذف الغرفة', `هل تريد حذف بيانات الغرفة <b>${roomId}</b> من Firebase نهائياً؟`, async ()=>{
+    try{
+      await remove(r(`rooms/${roomId}`));
+      await logActivity('game', `🗑️ حذف غرفة: ${roomId}`, 'admin');
+      notify('✅ تم حذف الغرفة','success');
+      setTimeout(loadRooms, 800);
+    }catch(e){ notify('❌ فشل','error'); }
+  });
 };
 
 window.sendRoomMsgPrompt = function(roomId){
