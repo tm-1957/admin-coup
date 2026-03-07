@@ -588,7 +588,7 @@ textarea.tool-input{resize:vertical;min-height:100px;}
           <div class="page-title">الغرف الحية <span class="live-dot"></span></div>
           <div class="page-sub">متابعة كاملة للغرف النشطة والمنتهية واللاعبين المتصلين</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <select id="rooms-filter" class="search-inp" onchange="loadRooms()" style="width:130px;">
             <option value="all">كل الغرف</option>
             <option value="playing">🟢 تلعب الآن</option>
@@ -596,9 +596,11 @@ textarea.tool-input{resize:vertical;min-height:100px;}
             <option value="ended">✅ منتهية</option>
           </select>
           <button class="tool-btn gold" onclick="loadRooms()" style="padding:8px 16px;font-size:11px;">↻ تحديث</button>
+          <button class="tool-btn red" onclick="purgeOldRoomsPrompt()" style="padding:8px 16px;font-size:11px;">🧹 حذف القديمة</button>
         </div>
       </div>
-      <div id="rooms-stats-bar" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;"></div>
+      <div id="rooms-stats-bar" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;"></div>
+      <div id="purge-rooms-msg" style="min-height:0;"></div>
       <div class="table-wrap" style="margin-bottom:20px;">
         <div class="table-header">
           <div class="table-title">👥 اللاعبون المتواجدون الآن <span id="online-count" style="font-family:var(--mono);font-size:11px;color:var(--text-muted);"></span></div>
@@ -1733,6 +1735,115 @@ window.purgeOldActivity = async function(){
       }
     }catch(e){ msg.textContent='❌ فشل'; }
   });
+};
+
+// ══════════════════════════════════════════════════════
+// 🧹 حذف الغرف المنتهية القديمة
+// ══════════════════════════════════════════════════════
+window.purgeOldRoomsPrompt = async function(){
+  // أولاً: احسب كم غرفة ستُحذف لكل فترة
+  let counts = { h24:0, d3:0, d7:0, d30:0, all:0 };
+  try{
+    const snap = await get(r('rooms'));
+    if(snap.exists()){
+      const now = Date.now();
+      const allRooms = Object.entries(snap.val());
+      const ended = allRooms.filter(([,rm])=>{
+        const s = rm.game?.status || rm.status || '';
+        return s === 'ended';
+      });
+      counts.h24  = ended.filter(([,rm])=>(now-(rm.game?.startedAt||rm.createdAt||now))>86400000).length;
+      counts.d3   = ended.filter(([,rm])=>(now-(rm.game?.startedAt||rm.createdAt||now))>3*86400000).length;
+      counts.d7   = ended.filter(([,rm])=>(now-(rm.game?.startedAt||rm.createdAt||now))>7*86400000).length;
+      counts.d30  = ended.filter(([,rm])=>(now-(rm.game?.startedAt||rm.createdAt||now))>30*86400000).length;
+      counts.all  = ended.length;
+    }
+  }catch(e){ console.error(e); }
+
+  const t = document.getElementById('modal-title');
+  const b = document.getElementById('modal-body');
+  const a = document.getElementById('modal-actions');
+  t.innerHTML = '🧹 حذف الغرف المنتهية القديمة';
+  b.innerHTML = `
+    <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;">اختر المدة الزمنية للغرف التي تريد حذفها:</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="room-action-btn" onclick="closeModal();purgeOldRooms(86400000)">
+        <span class="ra-icon">🕐</span>
+        <div><div class="ra-title">أقدم من 24 ساعة</div><div class="ra-sub">${counts.h24} غرفة ستُحذف</div></div>
+      </button>
+      <button class="room-action-btn gold" onclick="closeModal();purgeOldRooms(3*86400000)">
+        <span class="ra-icon">📅</span>
+        <div><div class="ra-title">أقدم من 3 أيام</div><div class="ra-sub">${counts.d3} غرفة ستُحذف</div></div>
+      </button>
+      <button class="room-action-btn gold" onclick="closeModal();purgeOldRooms(7*86400000)">
+        <span class="ra-icon">📆</span>
+        <div><div class="ra-title">أقدم من أسبوع</div><div class="ra-sub">${counts.d7} غرفة ستُحذف</div></div>
+      </button>
+      <button class="room-action-btn gold" onclick="closeModal();purgeOldRooms(30*86400000)">
+        <span class="ra-icon">🗓️</span>
+        <div><div class="ra-title">أقدم من 30 يوم</div><div class="ra-sub">${counts.d30} غرفة ستُحذف</div></div>
+      </button>
+      <button class="room-action-btn red" onclick="closeModal();purgeOldRooms(0)">
+        <span class="ra-icon">💥</span>
+        <div><div class="ra-title">حذف كل الغرف المنتهية</div><div class="ra-sub" style="color:var(--crimson-lt);">${counts.all} غرفة ستُحذف — لا يمكن التراجع</div></div>
+      </button>
+    </div>`;
+  a.innerHTML = `<button class="tool-btn" style="background:var(--surface2);border-color:var(--border2);color:var(--text-dim);" onclick="closeModal()">إلغاء</button>`;
+  document.getElementById('overlay').classList.add('open');
+};
+
+window.purgeOldRooms = async function(olderThanMs){
+  const msgEl = document.getElementById('purge-rooms-msg');
+  if(msgEl){ msgEl.innerHTML='<div class="status-banner info" style="margin-bottom:12px;"><span class="spinner-small"></span> جارٍ الحذف...</div>'; }
+
+  try{
+    const snap = await get(r('rooms'));
+    if(!snap.exists()){ notify('لا توجد غرف','error'); return; }
+
+    const now = Date.now();
+    const allRooms = Object.entries(snap.val());
+    const toDelete = allRooms.filter(([,rm])=>{
+      const s = rm.game?.status || rm.status || '';
+      if(s !== 'ended') return false;
+      if(olderThanMs === 0) return true; // كل المنتهية
+      const ts = rm.game?.startedAt || rm.createdAt || 0;
+      return ts > 0 && (now - ts) > olderThanMs;
+    });
+
+    if(!toDelete.length){
+      if(msgEl){ msgEl.innerHTML='<div class="status-banner ok" style="margin-bottom:12px;">✅ لا توجد غرف تستوفي الشرط</div>'; setTimeout(()=>msgEl.innerHTML='',4000); }
+      notify('لا توجد غرف للحذف','success');
+      return;
+    }
+
+    // حذف على دفعات (Firebase has limits)
+    let deleted = 0;
+    const BATCH = 20;
+    for(let i=0; i<toDelete.length; i+=BATCH){
+      const batch = toDelete.slice(i, i+BATCH);
+      const updates = {};
+      batch.forEach(([id])=>{ updates[`rooms/${id}`] = null; });
+      await update(r('/'), updates);
+      deleted += batch.length;
+      if(msgEl){ msgEl.innerHTML=`<div class="status-banner info" style="margin-bottom:12px;"><span class="spinner-small"></span> جارٍ الحذف... ${deleted}/${toDelete.length}</div>`; }
+    }
+
+    await logActivity('game', `🧹 حذف ${deleted} غرفة منتهية قديمة`, 'admin');
+
+    // تنظيف الكاش المحلي
+    toDelete.forEach(([id])=>{ if(_roomsCache[id]) delete _roomsCache[id]; });
+
+    if(msgEl){
+      msgEl.innerHTML=`<div class="status-banner ok" style="margin-bottom:12px;">✅ تم حذف ${deleted} غرفة منتهية بنجاح</div>`;
+      setTimeout(()=>{ if(msgEl) msgEl.innerHTML=''; }, 5000);
+    }
+    notify(`✅ تم حذف ${deleted} غرفة`,'success');
+    setTimeout(loadRooms, 1000);
+  }catch(e){
+    console.error(e);
+    if(msgEl){ msgEl.innerHTML=`<div class="status-banner warn" style="margin-bottom:12px;">❌ فشل الحذف: ${e.message}</div>`; }
+    notify('❌ فشل: '+e.message,'error');
+  }
 };
 
 async function logActivity(type, msg, uid){
