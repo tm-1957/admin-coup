@@ -309,6 +309,28 @@ textarea.tool-input{resize:vertical;min-height:100px;}
 .line-chart-wrap{position:relative;height:120px;}
 svg.line-chart{width:100%;height:120px;}
 
+/* ── SPECTATE ── */
+.sp-player-card{background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;padding:12px 14px;min-width:130px;flex:1;transition:.2s;}
+.sp-player-card.active-turn{border-color:var(--emerald-lt);background:rgba(40,160,90,.06);}
+.sp-player-card.eliminated{opacity:.45;border-style:dashed;}
+.sp-player-card .sp-av{font-size:28px;text-align:center;margin-bottom:6px;}
+.sp-player-card .sp-name{font-size:12px;font-weight:600;text-align:center;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sp-player-card .sp-coins{font-family:var(--mono);font-size:11px;text-align:center;color:var(--gold);}
+.sp-player-card .sp-cards{display:flex;justify-content:center;gap:4px;margin-top:6px;}
+.sp-card-dot{width:10px;height:14px;border-radius:2px;background:var(--gold);opacity:.8;}
+.sp-card-dot.revealed{background:var(--crimson);opacity:.6;}
+.sp-log-entry{padding:9px 18px;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px;color:var(--text-dim);line-height:1.5;}
+.sp-log-entry:last-child{border-bottom:none;}
+.report-card{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.03);transition:.15s;}
+.report-card:hover{background:rgba(255,255,255,.02);}
+.report-card:last-child{border-bottom:none;}
+.report-type{display:inline-block;padding:2px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);margin-bottom:6px;}
+.report-type.report{background:rgba(176,48,32,.1);color:var(--crimson-lt);border:1px solid rgba(176,48,32,.2);}
+.report-type.suggestion{background:rgba(40,160,90,.08);color:var(--emerald-lt);border:1px solid rgba(40,160,90,.2);}
+.report-type.question{background:rgba(42,90,204,.08);color:var(--sapphire-lt);border:1px solid rgba(42,90,204,.2);}
+.report-msg{font-size:13px;color:var(--text);margin-bottom:6px;line-height:1.6;}
+.report-meta{font-size:10px;color:var(--text-muted);font-family:var(--mono);}
+
 /* empty state */
 .empty{text-align:center;padding:48px 20px;color:var(--text-dim);}
 .empty-icon{font-size:40px;margin-bottom:12px;}
@@ -345,6 +367,8 @@ svg.line-chart{width:100%;height:120px;}
       <div class="nav-item" onclick="showPage('charts')"><span class="nav-icon">📈</span> الرسوم البيانية</div>
       <div class="nav-section">الإدارة</div>
       <div class="nav-item" onclick="showPage('rooms')"><span class="nav-icon">🏠</span> التحكم بالغرف</div>
+      <div class="nav-item" onclick="showPage('spectate')"><span class="nav-icon">👁️</span> مشاهدة مباشرة</div>
+      <div class="nav-item" onclick="showPage('reports')"><span class="nav-icon">📩</span> الشكاوى والاقتراحات</div>
       <div class="nav-item" onclick="showPage('tools')"><span class="nav-icon">🛠️</span> أدوات المطور</div>
       <div class="nav-item" onclick="showPage('broadcast')"><span class="nav-icon">📢</span> البث والإعلانات</div>
       <div class="nav-item" onclick="showPage('moderation')"><span class="nav-icon">🛡️</span> الإشراف</div>
@@ -695,6 +719,99 @@ svg.line-chart{width:100%;height:120px;}
   </div><!-- /main -->
 </div><!-- /app -->
 
+
+    <!-- SPECTATE -->
+    <div class="page" id="page-spectate">
+      <div class="page-header">
+        <div>
+          <div class="page-title">👁️ مشاهدة مباشرة <span class="live-dot"></span></div>
+          <div class="page-sub">تابع أي غرفة نشطة مباشرةً</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="spectate-room-input" class="search-inp" placeholder="Room ID (مثال: ABCD)" style="width:160px;font-family:var(--mono);text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+          <button class="tool-btn gold" onclick="startSpectate()" style="padding:8px 16px;font-size:12px;">👁️ مشاهدة</button>
+          <button class="tool-btn red" onclick="stopSpectate()" style="padding:8px 16px;font-size:12px;">⏹ إيقاف</button>
+        </div>
+      </div>
+
+      <!-- اختيار سريع من الغرف النشطة -->
+      <div id="spectate-active-rooms" style="margin-bottom:16px;"></div>
+
+      <!-- عرض اللعبة -->
+      <div id="spectate-view" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;">
+          <!-- اللوحة الرئيسية -->
+          <div>
+            <!-- شريط اللاعبين -->
+            <div class="table-wrap" style="margin-bottom:14px;">
+              <div class="table-header" style="padding:12px 18px;">
+                <div class="table-title">👥 اللاعبون — غرفة <span id="sp-room-id" style="font-family:var(--mono);color:var(--gold);"></span></div>
+                <div style="font-size:11px;color:var(--text-muted);font-family:var(--mono);">دور: <span id="sp-turn-name" style="color:var(--emerald-lt);"></span> · خزينة: <span id="sp-treasury" style="color:var(--gold);">—</span>🪙</div>
+              </div>
+              <div id="sp-players-bar" style="display:flex;flex-wrap:wrap;gap:10px;padding:14px 18px;"></div>
+            </div>
+            <!-- سجل الأحداث -->
+            <div class="table-wrap">
+              <div class="table-header" style="padding:12px 18px;">
+                <div class="table-title">📜 سجل الأحداث</div>
+              </div>
+              <div id="sp-log" style="max-height:320px;overflow-y:auto;"></div>
+            </div>
+          </div>
+          <!-- المعلومات الجانبية -->
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="chart-card">
+              <div class="chart-title">ℹ️ معلومات اللعبة</div>
+              <div id="sp-info"></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">🃏 الأوراق المكشوفة</div>
+              <div id="sp-revealed"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="spectate-empty" style="text-align:center;padding:60px;color:var(--text-dim);">
+        <div style="font-size:40px;margin-bottom:12px;">👁️</div>
+        <div style="font-size:14px;">اختر غرفة من الأعلى للمشاهدة</div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="page-header">
+        <div class="page-title">📩 الشكاوى والاقتراحات</div>
+        <div class="page-sub">جميع الرسائل الواردة من اللاعبين</div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-card" style="grid-column:span 2">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div class="chart-title" style="margin-bottom:0;">📩 الرسائل الواردة <span id="reports-total" style="font-family:var(--mono);font-size:11px;color:var(--text-muted);"></span></div>
+            <div style="display:flex;gap:8px;">
+              <select id="reports-filter" class="search-inp" onchange="loadReports()" style="width:130px;font-size:11px;">
+                <option value="all">الكل</option>
+                <option value="report">🚩 شكوى</option>
+                <option value="suggestion">💡 اقتراح</option>
+                <option value="question">❓ استفسار</option>
+              </select>
+              <button class="tool-btn gold" onclick="loadReports()" style="padding:7px 14px;font-size:11px;">↻ تحديث</button>
+            </div>
+          </div>
+          <div id="reports-list-main">
+            <div class="loading"><span class="spinner-small"></span> جارٍ التحميل</div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">📊 إحصائيات</div>
+          <div id="reports-stats"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">🕐 آخر الواردة</div>
+          <div id="reports-recent"></div>
+        </div>
+      </div>
+    </div>
+
 <!-- MODAL -->
 <div class="overlay" id="overlay">
   <div class="modal-box">
@@ -786,6 +903,8 @@ window.showPage = function(id){
   if(id==='moderation') loadModeration();
   if(id==='broadcast')  checkCurrentAnn();
   if(id==='settings')   loadSysInfo();
+  if(id==='spectate')   loadActiveRoomsForSpectate();
+  if(id==='reports')    loadReports();
 };
 
 // ── INIT ──
@@ -2053,6 +2172,195 @@ window.purgeOldRooms = async function(olderThanMs){
     if(msgEl) msgEl.innerHTML=`<div class="status-banner warn" style="margin-bottom:12px;">❌ فشل: ${e.message}</div>`;
     notify('❌ فشل: '+e.message,'error');
   }
+};
+
+// ══════════════════════════════════════════════════════
+// 👁️ SPECTATE — مشاهدة مباشرة
+// ══════════════════════════════════════════════════════
+let _spectateUnsub = null;
+let _spectateLogUnsub = null;
+
+async function loadActiveRoomsForSpectate(){
+  const el = document.getElementById('spectate-active-rooms');
+  if(!el) return;
+  try{
+    const snap = await get(r('rooms'));
+    if(!snap.exists()){ el.innerHTML=''; return; }
+    const active = Object.entries(snap.val()).filter(([,rm])=>{
+      const s = rm.game?.status || rm.status || '';
+      return s === 'playing';
+    });
+    if(!active.length){
+      el.innerHTML = '<div class="status-banner info" style="margin-bottom:0;">ℹ️ لا توجد غرف نشطة حالياً</div>';
+      return;
+    }
+    el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
+      ${active.map(([id,rm])=>{
+        const players = rm.game?.players
+          ? (Array.isArray(rm.game.players) ? rm.game.players : Object.values(rm.game.players))
+          : (rm.players ? Object.values(rm.players) : []);
+        return `<button onclick="startSpectateRoom('${id}')" class="tool-btn blue" style="padding:8px 14px;font-size:12px;">
+          🟢 ${id} <span style="color:var(--text-muted);margin-right:4px;">(${players.length} لاعبين)</span>
+        </button>`;
+      }).join('')}
+    </div>`;
+  }catch(e){ el.innerHTML=''; }
+}
+
+window.startSpectate = function(){
+  const id = document.getElementById('spectate-room-input')?.value?.trim().toUpperCase();
+  if(!id){ notify('❌ أدخل Room ID','error'); return; }
+  startSpectateRoom(id);
+};
+
+window.startSpectateRoom = function(roomId){
+  stopSpectate();
+  document.getElementById('spectate-room-input').value = roomId;
+  document.getElementById('spectate-empty').style.display = 'none';
+  document.getElementById('spectate-view').style.display  = 'block';
+  document.getElementById('sp-room-id').textContent = roomId;
+
+  // استمع للعبة
+  _spectateUnsub = onValue(r(`rooms/${roomId}/game`), snap => {
+    const gd = snap.val();
+    if(!gd){ document.getElementById('spectate-view').style.display='none'; document.getElementById('spectate-empty').style.display=''; return; }
+    renderSpectateGame(roomId, gd);
+  });
+
+  // استمع للسجل
+  _spectateLogUnsub = onValue(r(`rooms/${roomId}/log`), snap => {
+    const logData = snap.val();
+    const logEl = document.getElementById('sp-log');
+    if(!logEl) return;
+    if(!logData){ logEl.innerHTML = '<div class="sp-log-entry" style="color:var(--text-muted);">لا توجد أحداث بعد</div>'; return; }
+    const entries = Object.entries(logData).sort((a,b)=>+b[0]-+a[0]).slice(0,50);
+    logEl.innerHTML = entries.map(([,msg])=>`<div class="sp-log-entry">${msg}</div>`).join('');
+  });
+
+  notify('👁️ جارٍ المشاهدة: '+roomId,'success');
+};
+
+window.stopSpectate = function(){
+  if(_spectateUnsub){ off(r('dummy')); _spectateUnsub(); _spectateUnsub=null; }
+  if(_spectateLogUnsub){ _spectateLogUnsub(); _spectateLogUnsub=null; }
+  document.getElementById('spectate-view').style.display  = 'none';
+  document.getElementById('spectate-empty').style.display = '';
+};
+
+function renderSpectateGame(roomId, gd){
+  const players = Array.isArray(gd.players) ? gd.players : Object.values(gd.players||{});
+  const curPlayer = players[gd.turn] || {};
+  document.getElementById('sp-turn-name').textContent = curPlayer.name || '—';
+  document.getElementById('sp-treasury').textContent  = gd.treasury ?? '—';
+
+  // شريط اللاعبين
+  const bar = document.getElementById('sp-players-bar');
+  if(bar){
+    bar.innerHTML = players.map((p,i)=>{
+      const isActive = i === gd.turn;
+      const dots = (p.cards||[]).map((c,ci)=>`<div class="sp-card-dot ${p.revealed?.[ci]?'revealed':''}"></div>`).join('');
+      return `<div class="sp-player-card${isActive?' active-turn':''}${p.eliminated?' eliminated':''}">
+        <div class="sp-av">${p.av||'🤴'}</div>
+        <div class="sp-name">${esc(p.name||'—')}${p.isBot?' 🤖':''}</div>
+        <div class="sp-coins">◈ ${p.coins??'?'}</div>
+        <div class="sp-cards">${dots}</div>
+        ${p.eliminated?'<div style="font-size:9px;text-align:center;color:var(--crimson);margin-top:4px;">💀 خرج</div>':''}
+      </div>`;
+    }).join('');
+  }
+
+  // معلومات جانبية
+  const info = document.getElementById('sp-info');
+  if(info){
+    const dur = gd.startedAt ? Math.round((Date.now()-gd.startedAt)/60000) : 0;
+    info.innerHTML = `
+      <div class="info-row"><span class="info-key">الغرفة</span><span class="info-val" style="font-family:var(--mono);">${roomId}</span></div>
+      <div class="info-row"><span class="info-key">الحالة</span><span class="info-val">${gd.status==='playing'?'🟢 تلعب':'✅ منتهية'}</span></div>
+      <div class="info-row"><span class="info-key">الدور</span><span class="info-val">${(gd.turn||0)+1}</span></div>
+      <div class="info-row"><span class="info-key">المدة</span><span class="info-val">${dur} دقيقة</span></div>
+      <div class="info-row"><span class="info-key">اللاعبون</span><span class="info-val">${players.filter(p=>!p.eliminated).length}/${players.length}</span></div>
+      <div class="info-row"><span class="info-key">الخزينة</span><span class="info-val">${gd.treasury??'—'} 🪙</span></div>`;
+  }
+
+  // الأوراق المكشوفة
+  const rev = document.getElementById('sp-revealed');
+  if(rev){
+    const revealed = players.flatMap(p=>(p.cards||[]).filter((_,ci)=>p.revealed?.[ci]).map(c=>({player:p.name||'—', card:c})));
+    if(!revealed.length){
+      rev.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">لا توجد أوراق مكشوفة</div>';
+    } else {
+      rev.innerHTML = revealed.map(rc=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border2);font-size:12px;">
+          <span style="color:var(--text-dim);">${esc(rc.player)}</span>
+          <span style="font-family:var(--mono);color:var(--crimson-lt);">💀 ${rc.card}</span>
+        </div>`).join('');
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// 📩 REPORTS — الشكاوى والاقتراحات
+// ══════════════════════════════════════════════════════
+window.loadReports = async function(){
+  const el = document.getElementById('reports-list-main');
+  if(!el) return;
+  el.innerHTML = '<div class="loading"><span class="spinner-small"></span> جارٍ التحميل</div>';
+
+  try{
+    const snap = await get(r('admin/reports'));
+    if(!snap.exists()){
+      el.innerHTML = '<div class="empty"><div class="empty-icon">📩</div><div class="empty-text">لا توجد رسائل بعد</div></div>';
+      const st=document.getElementById('reports-stats'); if(st) st.innerHTML='<div style="font-size:12px;color:var(--text-muted);">لا توجد بيانات</div>';
+      return;
+    }
+
+    let items = Object.values(snap.val()).sort((a,b)=>b.ts-a.ts);
+    const total = items.length;
+    document.getElementById('reports-total').textContent = `(${total})`;
+
+    const filterVal = document.getElementById('reports-filter')?.value || 'all';
+    if(filterVal !== 'all') items = items.filter(i=>i.type===filterVal);
+
+    // stats
+    const byType = { report:0, suggestion:0, question:0 };
+    Object.values(snap.val()).forEach(i=>{ if(byType[i.type]!==undefined) byType[i.type]++; });
+    const st = document.getElementById('reports-stats');
+    if(st) st.innerHTML = `
+      <div class="info-row"><span class="info-key">🚩 شكاوى</span><span class="info-val" style="color:var(--crimson-lt);">${byType.report}</span></div>
+      <div class="info-row"><span class="info-key">💡 اقتراحات</span><span class="info-val" style="color:var(--emerald-lt);">${byType.suggestion}</span></div>
+      <div class="info-row"><span class="info-key">❓ استفسارات</span><span class="info-val" style="color:var(--sapphire-lt);">${byType.question}</span></div>
+      <div class="info-row"><span class="info-key">الإجمالي</span><span class="info-val">${total}</span></div>`;
+
+    // recent
+    const rc = document.getElementById('reports-recent');
+    if(rc){
+      const recent = Object.values(snap.val()).sort((a,b)=>b.ts-a.ts).slice(0,3);
+      rc.innerHTML = recent.map(i=>`
+        <div style="padding:8px 0;border-bottom:1px solid var(--border2);">
+          <div style="font-size:11px;color:var(--text-dim);">${esc(i.playerName||'—')} · ${fmtAgo(i.ts)}</div>
+          <div style="font-size:12px;color:var(--text);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(i.msg||'—')}</div>
+        </div>`).join('');
+    }
+
+    if(!items.length){
+      el.innerHTML = '<div class="empty"><div class="empty-icon">📩</div><div class="empty-text">لا توجد رسائل في هذه الفئة</div></div>';
+      return;
+    }
+
+    const typeLabel = { report:'🚩 شكوى', suggestion:'💡 اقتراح', question:'❓ استفسار' };
+    el.innerHTML = items.map(item=>`
+      <div class="report-card">
+        <span class="report-type ${item.type||'question'}">${typeLabel[item.type]||'❓ استفسار'}</span>
+        <div class="report-msg">${esc(item.msg||'—')}</div>
+        <div class="report-meta">
+          ${item.playerName?`👤 ${esc(item.playerName)} · `:''}
+          ${item.playerId?`<span style="cursor:pointer;color:var(--gold);" onclick="closeModal();showPlayerDetail('${item.playerId}')" title="عرض اللاعع">ID: ${item.playerId.slice(0,10)}</span> · `:''}
+          ${item.roomId?`🏠 ${item.roomId} · `:''}
+          🕐 ${fmtDate(item.ts)}
+        </div>
+      </div>`).join('');
+
+  }catch(e){ el.innerHTML=`<div class="empty"><div class="empty-text">❌ خطأ: ${e.message}</div></div>`; }
 };
 
 async function logActivity(type, msg, uid){
