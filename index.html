@@ -344,7 +344,7 @@ svg.line-chart{width:100%;height:120px;}
       <div class="nav-item" onclick="showPage('players')"><span class="nav-icon">👥</span> اللاعبون</div>
       <div class="nav-item" onclick="showPage('charts')"><span class="nav-icon">📈</span> الرسوم البيانية</div>
       <div class="nav-section">الإدارة</div>
-      <div class="nav-item" onclick="showPage('rooms')"><span class="nav-icon">🏠</span> الغرف الحية</div>
+      <div class="nav-item" onclick="showPage('rooms')"><span class="nav-icon">🏠</span> التحكم بالغرف</div>
       <div class="nav-item" onclick="showPage('tools')"><span class="nav-icon">🛠️</span> أدوات المطور</div>
       <div class="nav-item" onclick="showPage('broadcast')"><span class="nav-icon">📢</span> البث والإعلانات</div>
       <div class="nav-item" onclick="showPage('moderation')"><span class="nav-icon">🛡️</span> الإشراف</div>
@@ -598,13 +598,13 @@ svg.line-chart{width:100%;height:120px;}
     <div class="page" id="page-rooms">
       <div class="page-header">
         <div>
-          <div class="page-title">الغرف الحية <span class="live-dot"></span></div>
+          <div class="page-title">التحكم بالغرف <span class="live-dot"></span></div>
           <div class="page-sub">متابعة كاملة للغرف النشطة والمنتهية واللاعبين المتصلين</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <select id="rooms-filter" class="search-inp" onchange="loadRooms()" style="width:130px;">
             <option value="all">كل الغرف</option>
-            <option value="playing">🟢 تلعب الآن</option>
+            <option value="playing">🟢 غرف لم تنته</option>
             <option value="waiting">⏳ انتظار</option>
             <option value="ended">✅ منتهية</option>
           </select>
@@ -1362,7 +1362,7 @@ window.loadRooms = async function(){
       <div class="stat-card" style="--accent:var(--emerald-lt);padding:14px 16px;">
         <div class="stat-icon" style="font-size:18px;margin-bottom:6px;">🟢</div>
         <div class="stat-val" style="font-size:24px;">${playing}</div>
-        <div class="stat-lbl">تلعب الآن</div>
+        <div class="stat-lbl">لم تنته</div>
       </div>
       <div class="stat-card" style="--accent:var(--gold);padding:14px 16px;">
         <div class="stat-icon" style="font-size:18px;margin-bottom:6px;">⏳</div>
