@@ -599,7 +599,7 @@ svg.line-chart{width:100%;height:120px;}
       <div class="page-header">
         <div>
           <div class="page-title">التحكم بالغرف <span class="live-dot"></span></div>
-          <div class="page-sub">متابعة كاملة للغرف النشطة والمنتهية واللاعبين المتصلين</div>
+          <div class="page-sub">إدارة الغرف — إنهاء، حذف، ومراقبة اللاعبين</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <select id="rooms-filter" class="search-inp" onchange="loadRooms()" style="width:130px;">
@@ -1264,17 +1264,14 @@ window.openRoomActions = function(roomId){
       <span class="ra-icon">💬</span>
       <div><div class="ra-title">إرسال رسالة</div><div class="ra-sub">تظهر للاعبين في الغرفة</div></div>
     </button>`);
-    actions.push(`<button class="room-action-btn gold" onclick="closeModal();setTimeout(()=>kickAllFromRoom('${roomId}'),50)">
-      <span class="ra-icon">👟</span>
-      <div><div class="ra-title">إخراج جميع اللاعبين</div><div class="ra-sub">إخراج قسري من الغرفة</div></div>
-    </button>`);
-    actions.push(`<button class="room-action-btn red" onclick="closeModal();setTimeout(()=>forceEndRoom('${roomId}'),50)">
+
+    actions.push(`<button class="room-action-btn red" onclick="confirmForceEnd('${roomId}')">
       <span class="ra-icon">⏹</span>
       <div><div class="ra-title">إنهاء اللعبة</div><div class="ra-sub">إنهاء قسري مع إعلام اللاعبين</div></div>
     </button>`);
   }
 
-  actions.push(`<button class="room-action-btn red" onclick="closeModal();setTimeout(()=>deleteRoom('${roomId}'),50)">
+  actions.push(`<button class="room-action-btn red" onclick="confirmDeleteRoom('${roomId}')">
     <span class="ra-icon">🗑️</span>
     <div><div class="ra-title">حذف من Firebase</div><div class="ra-sub">حذف كامل لبيانات الغرفة</div></div>
   </button>`);
@@ -1295,6 +1292,68 @@ window.hideRoom = function(roomId){
   if(el){ el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),300); }
   const cnt = document.getElementById('rooms-count');
   notify('✅ تم إخفاء الغرفة من القائمة','success');
+};
+
+
+// ── تأكيد إنهاء الغرفة (نافذة مستقلة)
+window.confirmForceEnd = function(roomId){
+  // أغلق modal الإجراءات أولاً
+  document.getElementById('overlay').classList.remove('open');
+  // افتح modal تأكيد جديد بعد إغلاق السابق
+  requestAnimationFrame(()=>{
+    document.getElementById('modal-title').innerHTML = '⏹ تأكيد إنهاء اللعبة';
+    document.getElementById('modal-body').innerHTML  =
+      `هل تريد إنهاء الغرفة <b style="color:var(--gold-lt)">${roomId}</b> قسراً؟<br>
+       <small style="color:var(--text-muted);">سيُعلَم اللاعبون فوراً ولن يتمكنوا من مواصلة اللعب.</small>`;
+    document.getElementById('modal-actions').innerHTML = `
+      <button class="tool-btn" style="background:rgba(255,255,255,.05);border-color:var(--border);color:var(--text-dim);"
+        onclick="document.getElementById('overlay').classList.remove('open')">إلغاء</button>
+      <button class="tool-btn red" onclick="doForceEnd('${roomId}')">⏹ تأكيد الإنهاء</button>`;
+    document.getElementById('overlay').classList.add('open');
+  });
+};
+
+window.doForceEnd = async function(roomId){
+  document.getElementById('overlay').classList.remove('open');
+  try{
+    const now = Date.now();
+    await update(r('/'), {
+      [`rooms/${roomId}/status`]:          'ended',
+      [`rooms/${roomId}/game/status`]:     'ended',
+      [`rooms/${roomId}/adminForceEnd`]:   { ts:now, by:'admin' },
+      [`rooms/${roomId}/systemMsg`]:       { text:'🛑 تم إنهاء هذه الغرفة من قِبَل الإدارة.', ts:now },
+    });
+    await logActivity('game', `⏹ إنهاء قسري: ${roomId}`, 'admin');
+    notify('✅ تم إنهاء الغرفة','success');
+    setTimeout(loadRooms, 1000);
+  }catch(e){ console.error(e); notify('❌ فشل: '+e.message,'error'); }
+};
+
+// ── تأكيد حذف الغرفة (نافذة مستقلة)
+window.confirmDeleteRoom = function(roomId){
+  document.getElementById('overlay').classList.remove('open');
+  requestAnimationFrame(()=>{
+    document.getElementById('modal-title').innerHTML = '🗑️ تأكيد حذف الغرفة';
+    document.getElementById('modal-body').innerHTML  =
+      `هل تريد حذف الغرفة <b style="color:var(--gold-lt)">${roomId}</b> من Firebase نهائياً؟<br>
+       <small style="color:var(--crimson-lt);">⚠️ لا يمكن التراجع عن هذا الإجراء.</small>`;
+    document.getElementById('modal-actions').innerHTML = `
+      <button class="tool-btn" style="background:rgba(255,255,255,.05);border-color:var(--border);color:var(--text-dim);"
+        onclick="document.getElementById('overlay').classList.remove('open')">إلغاء</button>
+      <button class="tool-btn red" onclick="doDeleteRoom('${roomId}')">🗑️ حذف نهائي</button>`;
+    document.getElementById('overlay').classList.add('open');
+  });
+};
+
+window.doDeleteRoom = async function(roomId){
+  document.getElementById('overlay').classList.remove('open');
+  try{
+    await remove(r(`rooms/${roomId}`));
+    if(_roomsCache[roomId]) delete _roomsCache[roomId];
+    await logActivity('game', `🗑️ حذف غرفة: ${roomId}`, 'admin');
+    notify('✅ تم حذف الغرفة نهائياً','success');
+    setTimeout(loadRooms, 800);
+  }catch(e){ console.error(e); notify('❌ فشل: '+e.message,'error'); }
 };
 
 window.loadRooms = async function(){
@@ -1523,7 +1582,7 @@ window.kickAllFromRoom = async function(roomId){
   document.getElementById('modal-body').innerHTML  = `هل تريد إخراج جميع لاعبي الغرفة <b style="color:var(--gold-lt)">${roomId}</b> قسراً؟`;
   document.getElementById('modal-actions').innerHTML = `
     <button class="tool-btn" style="background:rgba(255,255,255,.05);border-color:var(--border);color:var(--text-dim);" onclick="closeModal()">إلغاء</button>
-    <button class="tool-btn gold" onclick="closeModal();const cb=_pendingConfirmCb;_pendingConfirmCb=null;if(cb)Promise.resolve(cb()).catch(e=>{console.error(e);notify('❌ '+e.message,'error');})">تأكيد</button>`;
+    <button class="tool-btn gold" onclick="runPendingConfirm()">تأكيد</button>`;
   document.getElementById('overlay').classList.add('open');
 };
 
@@ -1541,7 +1600,7 @@ window.deleteRoom = async function(roomId){
   document.getElementById('modal-body').innerHTML  = `هل تريد حذف الغرفة <b style="color:var(--gold-lt)">${roomId}</b> من Firebase نهائياً؟<br><small style="color:var(--crimson-lt);">⚠️ لا يمكن التراجع عن هذا الإجراء.</small>`;
   document.getElementById('modal-actions').innerHTML = `
     <button class="tool-btn" style="background:rgba(255,255,255,.05);border-color:var(--border);color:var(--text-dim);" onclick="closeModal()">إلغاء</button>
-    <button class="tool-btn red" onclick="closeModal();const cb=_pendingConfirmCb;_pendingConfirmCb=null;if(cb)Promise.resolve(cb()).catch(e=>{console.error(e);notify('❌ '+e.message,'error');})">حذف نهائي</button>`;
+    <button class="tool-btn red" onclick="runPendingConfirm()">حذف نهائي</button>`;
   document.getElementById('overlay').classList.add('open');
 };
 
@@ -1587,7 +1646,7 @@ window.forceEndRoom = async function(roomId){
   document.getElementById('modal-body').innerHTML  = `هل تريد إنهاء الغرفة <b style="color:var(--gold-lt)">${roomId}</b> قسراً؟<br><small style="color:var(--text-muted);">سيُعلَم اللاعبون فوراً.</small>`;
   document.getElementById('modal-actions').innerHTML = `
     <button class="tool-btn" style="background:rgba(255,255,255,.05);border-color:var(--border);color:var(--text-dim);" onclick="closeModal()">إلغاء</button>
-    <button class="tool-btn red" onclick="closeModal();const cb=_pendingConfirmCb;_pendingConfirmCb=null;if(cb)Promise.resolve(cb()).catch(e=>{console.error(e);notify('❌ '+e.message,'error');})">تأكيد الإنهاء</button>`;
+    <button class="tool-btn red" onclick="runPendingConfirm()">تأكيد الإنهاء</button>`;
   document.getElementById('overlay').classList.add('open');
 };
 
@@ -1927,15 +1986,16 @@ window.showConfirm = function(title, body, onOk){
   document.getElementById('modal-body').innerHTML  = body;
   document.getElementById('modal-actions').innerHTML = `
     <button class="tool-btn" style="background:rgba(255,255,255,.05);border-color:var(--border);color:var(--text-dim);" onclick="closeModal()">إلغاء</button>
-    <button class="tool-btn red" id="confirm-ok-btn" onclick="
-      closeModal();
-      const cb = _pendingConfirmCb;
-      _pendingConfirmCb = null;
-      if(cb){ Promise.resolve(cb()).catch(e=>{ console.error(e); window.notify('❌ خطأ: '+e.message,'error'); }); }
-    ">تأكيد</button>`;
+    <button class="tool-btn red" onclick="runPendingConfirm()">تأكيد</button>`;
   document.getElementById('overlay').classList.add('open');
 };
 window.closeModal = ()=>document.getElementById('overlay').classList.remove('open');
+window.runPendingConfirm = function(){
+  closeModal();
+  const cb = _pendingConfirmCb;
+  _pendingConfirmCb = null;
+  if(cb) Promise.resolve(cb()).catch(e=>{ console.error(e); notify('❌ '+e.message,'error'); });
+};
 document.getElementById('overlay').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal(); });
 
 // ── NOTIFY ──
