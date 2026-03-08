@@ -369,6 +369,7 @@ svg.line-chart{width:100%;height:120px;}
       <div class="nav-item" onclick="showPage('rooms')"><span class="nav-icon">🏠</span> التحكم بالغرف</div>
       <div class="nav-item" onclick="showPage('spectate')"><span class="nav-icon">👁️</span> مشاهدة مباشرة</div>
       <div class="nav-item" onclick="showPage('reports')"><span class="nav-icon">📩</span> الشكاوى والاقتراحات</div>
+      <div class="nav-item" onclick="showPage('visitors')"><span class="nav-icon">🌐</span> إحصائيات الزوار</div>
       <div class="nav-item" onclick="showPage('tools')"><span class="nav-icon">🛠️</span> أدوات المطور</div>
       <div class="nav-item" onclick="showPage('broadcast')"><span class="nav-icon">📢</span> البث والإعلانات</div>
       <div class="nav-item" onclick="showPage('moderation')"><span class="nav-icon">🛡️</span> الإشراف</div>
@@ -629,6 +630,7 @@ svg.line-chart{width:100%;height:120px;}
           <select id="rooms-filter" class="search-inp" onchange="loadRooms()" style="width:130px;">
             <option value="all">كل الغرف</option>
             <option value="playing">🟢 غرف لم تنته</option>
+            <option value="solo">🤖 مع البوتات</option>
             <option value="waiting">⏳ انتظار</option>
             <option value="ended">✅ منتهية</option>
           </select>
@@ -812,6 +814,52 @@ svg.line-chart{width:100%;height:120px;}
       </div>
     </div>
 
+
+    <!-- VISITORS -->
+    <div class="page" id="page-visitors">
+      <div class="page-header">
+        <div class="page-title">🌐 إحصائيات الزوار</div>
+        <div class="page-sub">جميع من فتح الموقع — لاعبون وزوار</div>
+      </div>
+
+      <!-- بطاقات الإحصائيات -->
+      <div class="stats-grid" id="visitors-stats-grid" style="margin-bottom:20px;">
+        <div class="loading">جارٍ التحميل <span class="spinner-small"></span></div>
+      </div>
+
+      <!-- رسم بياني آخر 7 أيام -->
+      <div class="charts-grid" style="margin-bottom:20px;">
+        <div class="chart-card">
+          <div class="chart-title">📅 الزيارات — آخر 7 أيام</div>
+          <div class="bar-chart" id="visitors-bar-weekly"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">🕐 توزيع ساعات اليوم</div>
+          <div class="bar-chart" id="visitors-bar-hourly"></div>
+        </div>
+      </div>
+
+      <!-- جدول الزوار -->
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-title">الزوار <span id="visitors-count" style="font-family:var(--mono);font-size:11px;color:var(--text-dim);"></span></div>
+          <div style="display:flex;gap:8px;">
+            <select id="visitors-filter" class="search-inp" onchange="loadVisitors()" style="width:130px;font-size:11px;">
+              <option value="all">الكل</option>
+              <option value="played">لعبوا ✅</option>
+              <option value="notplayed">لم يلعبوا</option>
+              <option value="mobile">جوال 📱</option>
+              <option value="desktop">كمبيوتر 💻</option>
+            </select>
+            <button class="tool-btn gold" onclick="loadVisitors()" style="padding:7px 14px;font-size:11px;">↻ تحديث</button>
+          </div>
+        </div>
+        <div id="visitors-table-wrap">
+          <div class="loading">جارٍ التحميل <span class="spinner-small"></span></div>
+        </div>
+      </div>
+    </div>
+
 <!-- MODAL -->
 <div class="overlay" id="overlay">
   <div class="modal-box">
@@ -905,6 +953,7 @@ window.showPage = function(id){
   if(id==='settings')   loadSysInfo();
   if(id==='spectate')   loadActiveRoomsForSpectate();
   if(id==='reports')    loadReports();
+  if(id==='visitors')   loadVisitors();
 };
 
 // ── INIT ──
@@ -1611,26 +1660,28 @@ window.loadRooms = async function(){
     const allRooms = Object.entries(allRoomsRaw);
 
     // ── إحصائيات سريعة
-    const playing = allRooms.filter(([,rm])=>rm.status==='playing'||(rm.game?.status==='playing')).length;
-    const ended   = allRooms.filter(([,rm])=>rm.status==='ended'||(rm.game?.status==='ended')).length;
-    const waiting = allRooms.filter(([,rm])=>rm.status==='waiting'||(!rm.status&&rm.players)).length;
+    const soloRooms  = allRooms.filter(([id])=>id.startsWith('SOLO_'));
+    const onlineRooms= allRooms.filter(([id])=>!id.startsWith('SOLO_'));
+    const playing    = onlineRooms.filter(([,rm])=>rm.status==='playing'||(rm.game?.status==='playing')).length;
+    const ended      = onlineRooms.filter(([,rm])=>rm.status==='ended'||(rm.game?.status==='ended')).length;
+    const waiting    = onlineRooms.filter(([,rm])=>rm.status==='waiting'||(!rm.status&&rm.players)).length;
     const totalPlayers = allRooms.reduce((s,[,rm])=>s+(rm.players?Object.keys(rm.players).length:0),0);
 
     if(statsBar) statsBar.innerHTML = `
       <div class="stat-card" style="--accent:var(--emerald-lt);padding:14px 16px;">
         <div class="stat-icon" style="font-size:18px;margin-bottom:6px;">🟢</div>
         <div class="stat-val" style="font-size:24px;">${playing}</div>
-        <div class="stat-lbl">لم تنته</div>
+        <div class="stat-lbl">أونلاين يلعب</div>
+      </div>
+      <div class="stat-card" style="--accent:#90caf9;padding:14px 16px;">
+        <div class="stat-icon" style="font-size:18px;margin-bottom:6px;">🤖</div>
+        <div class="stat-val" style="font-size:24px;">${soloRooms.length}</div>
+        <div class="stat-lbl">مع البوتات</div>
       </div>
       <div class="stat-card" style="--accent:var(--gold);padding:14px 16px;">
         <div class="stat-icon" style="font-size:18px;margin-bottom:6px;">⏳</div>
         <div class="stat-val" style="font-size:24px;">${waiting}</div>
         <div class="stat-lbl">في الانتظار</div>
-      </div>
-      <div class="stat-card" style="--accent:var(--text-muted);padding:14px 16px;">
-        <div class="stat-icon" style="font-size:18px;margin-bottom:6px;">✅</div>
-        <div class="stat-val" style="font-size:24px;">${ended}</div>
-        <div class="stat-lbl">منتهية</div>
       </div>
       <div class="stat-card" style="--accent:var(--sapphire-lt);padding:14px 16px;">
         <div class="stat-icon" style="font-size:18px;margin-bottom:6px;">👥</div>
@@ -1643,6 +1694,7 @@ window.loadRooms = async function(){
     if(filterVal==='playing') filtered = allRooms.filter(([,rm])=>rm.status==='playing'||rm.game?.status==='playing');
     if(filterVal==='waiting') filtered = allRooms.filter(([,rm])=>rm.status==='waiting'||(!rm.status&&rm.players&&rm.game?.status!=='ended'));
     if(filterVal==='ended')   filtered = allRooms.filter(([,rm])=>rm.status==='ended'||rm.game?.status==='ended');
+    if(filterVal==='solo')    filtered = allRooms.filter(([id])=>id.startsWith('SOLO_'));
 
     // ── ترتيب: الأقدم أولاً (أصغر timestamp في الأعلى)
     filtered = filtered.filter(([id])=>!_hiddenRooms.has(id));
@@ -1677,10 +1729,12 @@ window.loadRooms = async function(){
         const turn     = game.turn !== undefined ? game.turn+1 : null;
         const treasury = game.treasury;
 
-        // لون البطاقة حسب الحالة
-        const cardBorder = isPlaying ? 'rgba(40,160,90,.3)' : isEnded ? 'rgba(160,120,40,.2)' : 'rgba(42,90,204,.2)';
-        const cardAccent = isPlaying ? 'var(--emerald-lt)' : isEnded ? 'var(--gold)' : 'var(--sapphire-lt)';
-        const statusBadge = isPlaying
+        const isSoloRoom = roomId.startsWith('SOLO_');
+        const cardBorder = isSoloRoom ? 'rgba(100,180,255,.2)' : isPlaying ? 'rgba(40,160,90,.3)' : isEnded ? 'rgba(160,120,40,.2)' : 'rgba(42,90,204,.2)';
+        const cardAccent = isSoloRoom ? '#90caf9' : isPlaying ? 'var(--emerald-lt)' : isEnded ? 'var(--gold)' : 'var(--sapphire-lt)';
+        const statusBadge = isSoloRoom
+          ? `<span style="background:rgba(100,180,255,.08);color:#90caf9;border:1px solid rgba(100,180,255,.2);padding:2px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);">🤖 بوتات</span>`
+          : isPlaying
           ? `<span style="background:rgba(40,160,90,.12);color:var(--emerald-lt);border:1px solid rgba(40,160,90,.3);padding:2px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);">🟢 يلعب</span>`
           : isEnded
           ? `<span style="background:rgba(160,120,40,.1);color:var(--gold);border:1px solid rgba(160,120,40,.25);padding:2px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);">✅ منتهية</span>`
@@ -2363,6 +2417,164 @@ window.loadReports = async function(){
   }catch(e){ el.innerHTML=`<div class="empty"><div class="empty-text">❌ خطأ: ${e.message}</div></div>`; }
 };
 
+// ══════════════════════════════════════════════════════
+// 🌐 VISITORS — إحصائيات الزوار
+// ══════════════════════════════════════════════════════
+window.loadVisitors = async function(){
+  const statsGrid = document.getElementById('visitors-stats-grid');
+  const tableWrap = document.getElementById('visitors-table-wrap');
+  if(!statsGrid || !tableWrap) return;
+
+  try{
+    // جلب الزوار والإحصائيات اليومية بالتوازي
+    const [vSnap, statsSnap] = await Promise.all([
+      get(r('admin/visitors')),
+      get(r('admin/stats/daily')),
+    ]);
+
+    const visitors = vSnap.exists() ? Object.values(vSnap.val()) : [];
+    const dailyData = statsSnap.exists() ? statsSnap.val() : {};
+
+    // ── إحصائيات عامة
+    const total     = visitors.length;
+    const played    = visitors.filter(v=>v.everPlayed).length;
+    const mobile    = visitors.filter(v=>v.device==='mobile').length;
+    const desktop   = visitors.filter(v=>v.device==='desktop').length;
+    const now       = Date.now();
+    const today     = new Date().toISOString().slice(0,10);
+    const todayData = dailyData[today] || {};
+    const todayUV   = todayData.uniqueVisitors ? Object.keys(todayData.uniqueVisitors).length : 0;
+    const todayPV   = todayData.totalPageviews || 0;
+    const totalTimeMs = visitors.reduce((s,v)=>s+(v.totalTimeMs||0), 0);
+    const avgTimeMs   = visitors.filter(v=>v.totalTimeMs>0).length
+      ? Math.round(totalTimeMs / visitors.filter(v=>v.totalTimeMs>0).length) : 0;
+
+    statsGrid.innerHTML = `
+      <div class="stat-card" style="--accent:var(--gold)">
+        <div class="stat-icon">🌐</div>
+        <div class="stat-val">${total}</div>
+        <div class="stat-lbl">إجمالي الزوار الفريدون</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--emerald-lt)">
+        <div class="stat-icon">📅</div>
+        <div class="stat-val">${todayUV}</div>
+        <div class="stat-lbl">زوار اليوم</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--sapphire-lt)">
+        <div class="stat-icon">👁️</div>
+        <div class="stat-val">${todayPV}</div>
+        <div class="stat-lbl">مشاهدات صفحة اليوم</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--emerald-lt)">
+        <div class="stat-icon">🎮</div>
+        <div class="stat-val">${played}</div>
+        <div class="stat-lbl">لعبوا على الأقل مرة</div>
+        <div class="stat-delta">${total ? Math.round(played/total*100) : 0}% من الزوار</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--sapphire-lt)">
+        <div class="stat-icon">📱</div>
+        <div class="stat-val">${mobile}</div>
+        <div class="stat-lbl">جوال</div>
+        <div class="stat-delta">${total ? Math.round(mobile/total*100) : 0}%</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--gold)">
+        <div class="stat-icon">💻</div>
+        <div class="stat-val">${desktop}</div>
+        <div class="stat-lbl">كمبيوتر</div>
+        <div class="stat-delta">${total ? Math.round(desktop/total*100) : 0}%</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--emerald-lt)">
+        <div class="stat-icon">⏱</div>
+        <div class="stat-val" style="font-size:20px;">${fmtMsShort(avgTimeMs)}</div>
+        <div class="stat-lbl">متوسط وقت الجلسة</div>
+      </div>
+      <div class="stat-card" style="--accent:var(--gold)">
+        <div class="stat-icon">🕐</div>
+        <div class="stat-val" style="font-size:20px;">${fmtMsShort(totalTimeMs)}</div>
+        <div class="stat-lbl">إجمالي وقت التصفح</div>
+      </div>`;
+
+    // ── رسم بياني آخر 7 أيام
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const weekly = [];
+    for(let i=6; i>=0; i--){
+      const d = new Date(todayStart.getTime() - i*86400000);
+      const key = d.toISOString().slice(0,10);
+      const dd = dailyData[key] || {};
+      weekly.push({
+        lbl: d.toLocaleDateString('ar',{weekday:'short'}),
+        cnt: dd.uniqueVisitors ? Object.keys(dd.uniqueVisitors).length : 0,
+      });
+    }
+    renderHBar('visitors-bar-weekly', weekly);
+
+    // ── توزيع ساعات اليوم
+    const hours = [];
+    for(let h=0; h<24; h+=3){
+      const cnt = [h,h+1,h+2].reduce((s,hh)=>{
+        return s + Object.values(dailyData).reduce((ss,dd2)=>ss+(dd2.hours?.[hh]||0), 0);
+      }, 0);
+      hours.push({ lbl: h+'س', cnt });
+    }
+    renderHBar('visitors-bar-hourly', hours);
+
+    // ── جدول الزوار
+    let filtered = [...visitors].sort((a,b)=>(b.lastVisit||0)-(a.lastVisit||0));
+    const fv = document.getElementById('visitors-filter')?.value || 'all';
+    if(fv==='played')    filtered = filtered.filter(v=>v.everPlayed);
+    if(fv==='notplayed') filtered = filtered.filter(v=>!v.everPlayed);
+    if(fv==='mobile')    filtered = filtered.filter(v=>v.device==='mobile');
+    if(fv==='desktop')   filtered = filtered.filter(v=>v.device==='desktop');
+
+    document.getElementById('visitors-count').textContent = `(${filtered.length})`;
+
+    if(!filtered.length){
+      tableWrap.innerHTML = '<div class="empty"><div class="empty-icon">🌐</div><div class="empty-text">لا توجد بيانات</div></div>';
+      return;
+    }
+
+    tableWrap.innerHTML = `<table>
+      <thead><tr>
+        <th>#</th><th>المعرّف</th><th>الاسم</th><th>الجهاز</th><th>الدولة</th>
+        <th>الزيارات</th><th>وقت التصفح</th><th>أول زيارة</th><th>آخر زيارة</th><th>لعب؟</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.map((v,i)=>`<tr>
+          <td class="td-id">${i+1}</td>
+          <td class="td-id" style="cursor:pointer;color:var(--gold);" onclick="navigator.clipboard.writeText('${v.uid}').then(()=>notify('✅ نُسخ','success'))" title="نسخ">${(v.uid||'—').slice(0,10)}</td>
+          <td class="td-name">${v.name ? `<span style="font-size:16px;margin-left:4px;">${v.av||''}</span>${esc(v.name)}` : '<span style="color:var(--text-muted);">—</span>'}</td>
+          <td><span class="badge ${v.device==='mobile'?'badge-mobile':'badge-desktop'}">${v.device==='mobile'?'📱':'💻'} ${v.device==='mobile'?'جوال':'كمبيوتر'}</span></td>
+          <td class="td-time">${v.country||'—'}</td>
+          <td class="td-num">${v.visits||1}</td>
+          <td class="td-time">${fmtMsShort(v.totalTimeMs||0)}</td>
+          <td class="td-time">${fmtDate(v.firstVisit)}</td>
+          <td class="td-time">${fmtAgo(v.lastVisit)}</td>
+          <td>${v.everPlayed
+            ? '<span class="badge badge-online">✅ لعب</span>'
+            : '<span style="color:var(--text-muted);font-size:11px;">لا</span>'}</td>
+        </tr>`).join('')}
+      </tbody></table>`;
+
+  }catch(e){
+    if(statsGrid) statsGrid.innerHTML = `<div class="empty"><div class="empty-text">❌ خطأ: ${e.message}</div></div>`;
+    console.error(e);
+  }
+};
+
+function renderHBar(elId, data){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const max = Math.max(...data.map(d=>d.cnt), 1);
+  el.innerHTML = data.map(d=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+      <div style="width:36px;text-align:left;font-size:10px;color:var(--text-muted);font-family:var(--mono);">${d.lbl}</div>
+      <div style="flex:1;background:rgba(255,255,255,.05);border-radius:4px;height:14px;overflow:hidden;">
+        <div style="height:100%;width:${Math.round(d.cnt/max*100)}%;background:linear-gradient(90deg,rgba(201,168,76,.6),rgba(201,168,76,.3));border-radius:4px;transition:width .4s;"></div>
+      </div>
+      <div style="width:28px;text-align:right;font-size:11px;font-family:var(--mono);color:var(--text-dim);">${d.cnt}</div>
+    </div>`).join('');
+}
+
 async function logActivity(type, msg, uid){
   await push(r('admin/activity'), { type, msg, uid, ts: Date.now() });
 }
@@ -2399,6 +2611,16 @@ function fmtDate(ts){
   if(!ts) return '—';
   return new Date(ts).toLocaleDateString('ar-SA',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 }
+function fmtMsShort(ms){
+  if(!ms || ms<=0) return '—';
+  const s = Math.round(ms/1000);
+  if(s < 60) return s+'ث';
+  const m = Math.floor(s/60), sec = s%60;
+  if(m < 60) return m+'د'+(sec?sec+'ث':'');
+  const h = Math.floor(m/60), min = m%60;
+  return h+'س'+(min?min+'د':'');
+}
+
 function fmtAgo(ts){
   if(!ts) return '—';
   const diff = Date.now()-ts;
@@ -2415,15 +2637,6 @@ function fmtMs(ms){
   if(h)  return `${h}س ${m}د`;
   if(m)  return `${m}د ${s}ث`;
   return `${s}ث`;
-}
-function fmtMsShort(ms){
-  // للبطاقات الإحصائية
-  if(!ms || ms <= 0) return '—';
-  const h = Math.floor(ms/3600000);
-  const m = Math.floor((ms%3600000)/60000);
-  if(h)  return `${h}س ${m}د`;
-  if(m)  return `${m}د`;
-  return Math.floor(ms/1000)+'ث';
 }
 </script>
 
