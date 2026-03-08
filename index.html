@@ -1201,7 +1201,11 @@ window.banPlayer = async function(uid, reason=''){
             }
           }
           if(inPlayers || inGame){
-            updates[`rooms/${roomId}/adminKick/${uid}`] = { ts:now, reason:banReason };
+            updates[`rooms/${roomId}/adminKick/${uid}`]  = { ts:now, reason:banReason };
+            updates[`rooms/${roomId}/status`]            = 'ended';
+            updates[`rooms/${roomId}/game/status`]       = 'ended';
+            updates[`rooms/${roomId}/adminForceEnd`]     = { ts:now, reason:'player banned', by:'admin' };
+            updates[`rooms/${roomId}/systemMsg`]         = { text:`🚫 تم إنهاء الغرفة — اللاعع ${uid.slice(0,8)} محظور.`, ts:now };
           }
         }
         if(Object.keys(updates).length > 0){
