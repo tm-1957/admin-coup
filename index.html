@@ -281,7 +281,7 @@ textarea.tool-input{resize:vertical;min-height:100px;}
 .overlay.open{display:flex;}
 .modal-box{
   background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:28px;width:420px;max-width:90vw;
+  padding:28px;width:400px;max-width:90vw;
   box-shadow:0 24px 60px rgba(0,0,0,.6);
 }
 .modal-title{font-family:var(--serif);font-size:16px;color:var(--gold);margin-bottom:16px;}
@@ -304,6 +304,10 @@ textarea.tool-input{resize:vertical;min-height:100px;}
 .bar:hover{background:linear-gradient(to top,rgba(201,168,76,.6),var(--gold-lt));}
 .bar-lbl{font-family:var(--mono);font-size:9px;color:var(--text-muted);white-space:nowrap;}
 .bar-val{font-family:var(--mono);font-size:9px;color:var(--gold);}
+
+/* line chart */
+.line-chart-wrap{position:relative;height:120px;}
+svg.line-chart{width:100%;height:120px;}
 
 /* empty state */
 .empty{text-align:center;padding:48px 20px;color:var(--text-dim);}
@@ -335,13 +339,16 @@ textarea.tool-input{resize:vertical;min-height:100px;}
       <div class="s-sub">ADMIN PANEL</div>
     </div>
     <nav class="nav">
+      <div class="nav-section">الرئيسية</div>
       <div class="nav-item active" onclick="showPage('overview')"><span class="nav-icon">📊</span> نظرة عامة</div>
       <div class="nav-item" onclick="showPage('players')"><span class="nav-icon">👥</span> اللاعبون</div>
       <div class="nav-item" onclick="showPage('charts')"><span class="nav-icon">📈</span> الرسوم البيانية</div>
+      <div class="nav-section">الإدارة</div>
       <div class="nav-item" onclick="showPage('rooms')"><span class="nav-icon">🏠</span> الغرف الحية</div>
       <div class="nav-item" onclick="showPage('tools')"><span class="nav-icon">🛠️</span> أدوات المطور</div>
       <div class="nav-item" onclick="showPage('broadcast')"><span class="nav-icon">📢</span> البث والإعلانات</div>
       <div class="nav-item" onclick="showPage('moderation')"><span class="nav-icon">🛡️</span> الإشراف</div>
+      <div class="nav-section">النظام</div>
       <div class="nav-item" onclick="showPage('activity')"><span class="nav-icon">📜</span> سجل النشاط</div>
       <div class="nav-item" onclick="showPage('settings')"><span class="nav-icon">⚙️</span> الإعدادات</div>
     </nav>
@@ -425,8 +432,10 @@ textarea.tool-input{resize:vertical;min-height:100px;}
     <!-- TOOLS -->
     <div class="page" id="page-tools">
       <div class="page-header">
-        <div class="page-title">أدوات المطور</div>
-        <div class="page-sub">إدارة اللاعبين — بحث، حظر، حذف</div>
+        <div>
+          <div class="page-title">أدوات المطور</div>
+          <div class="page-sub">إدارة اللاعبين — بحث، حظر، حذف</div>
+        </div>
       </div>
       <div class="tools-grid">
         <div class="tool-card">
@@ -490,8 +499,10 @@ textarea.tool-input{resize:vertical;min-height:100px;}
     <!-- BROADCAST -->
     <div class="page" id="page-broadcast">
       <div class="page-header">
-        <div class="page-title">البث والإعلانات</div>
-        <div class="page-sub">إرسال رسائل وإعلانات للاعبين</div>
+        <div>
+          <div class="page-title">البث والإعلانات</div>
+          <div class="page-sub">إرسال رسائل وإعلانات للاعبين</div>
+        </div>
       </div>
       <div class="tools-grid">
         <div class="tool-card" style="grid-column:span 2">
@@ -543,8 +554,10 @@ textarea.tool-input{resize:vertical;min-height:100px;}
     <!-- MODERATION -->
     <div class="page" id="page-moderation">
       <div class="page-header">
-        <div class="page-title">الإشراف</div>
-        <div class="page-sub">إدارة المحظورين ومراقبة المشكلات</div>
+        <div>
+          <div class="page-title">الإشراف</div>
+          <div class="page-sub">إدارة المحظورين ومراقبة المشكلات</div>
+        </div>
       </div>
       <div class="charts-grid">
         <div class="chart-card" style="grid-column:span 2">
@@ -588,7 +601,7 @@ textarea.tool-input{resize:vertical;min-height:100px;}
           <div class="page-title">الغرف الحية <span class="live-dot"></span></div>
           <div class="page-sub">متابعة كاملة للغرف النشطة والمنتهية واللاعبين المتصلين</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div style="display:flex;gap:8px;align-items:center;">
           <select id="rooms-filter" class="search-inp" onchange="loadRooms()" style="width:130px;">
             <option value="all">كل الغرف</option>
             <option value="playing">🟢 تلعب الآن</option>
@@ -599,8 +612,12 @@ textarea.tool-input{resize:vertical;min-height:100px;}
           <button class="tool-btn red" onclick="purgeOldRoomsPrompt()" style="padding:8px 16px;font-size:11px;">🧹 حذف القديمة</button>
         </div>
       </div>
+
+      <!-- إحصائيات سريعة -->
       <div id="rooms-stats-bar" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;"></div>
       <div id="purge-rooms-msg" style="min-height:0;"></div>
+
+      <!-- اللاعبون المتصلون -->
       <div class="table-wrap" style="margin-bottom:20px;">
         <div class="table-header">
           <div class="table-title">👥 اللاعبون المتواجدون الآن <span id="online-count" style="font-family:var(--mono);font-size:11px;color:var(--text-muted);"></span></div>
@@ -609,6 +626,8 @@ textarea.tool-input{resize:vertical;min-height:100px;}
           <div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>
         </div>
       </div>
+
+      <!-- بطاقات الغرف -->
       <div style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
         <div style="font-family:var(--serif);font-size:14px;color:var(--gold);">🎮 الغرف <span id="rooms-count" style="font-family:var(--mono);font-size:11px;color:var(--text-muted);"></span></div>
       </div>
@@ -620,8 +639,10 @@ textarea.tool-input{resize:vertical;min-height:100px;}
     <!-- SETTINGS -->
     <div class="page" id="page-settings">
       <div class="page-header">
-        <div class="page-title">الإعدادات</div>
-        <div class="page-sub">إعدادات اللعبة والنظام</div>
+        <div>
+          <div class="page-title">الإعدادات</div>
+          <div class="page-sub">إعدادات اللعبة والنظام</div>
+        </div>
       </div>
       <div class="tools-grid">
         <div class="tool-card">
@@ -671,8 +692,8 @@ textarea.tool-input{resize:vertical;min-height:100px;}
       </div>
     </div>
 
-  </div>
-</div>
+  </div><!-- /main -->
+</div><!-- /app -->
 
 <!-- MODAL -->
 <div class="overlay" id="overlay">
@@ -687,7 +708,7 @@ textarea.tool-input{resize:vertical;min-height:100px;}
 <div class="notif" id="notif"></div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp }                                     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set, update, remove, push, onValue, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const FB = {
@@ -703,6 +724,7 @@ const app = initializeApp(FB);
 const db  = getDatabase(app);
 const r   = path => ref(db, path);
 
+// ── كلمة المرور (غيّرها لكلمة مرور قوية) ──
 const ADMIN_PASS = "TurkiAdmin2026#";
 const SESSION_KEY = "coup_admin_auth";
 
@@ -726,12 +748,14 @@ window.doLogout = function(){
   location.reload();
 };
 
+// تحقق من الجلسة
 if(sessionStorage.getItem(SESSION_KEY)){
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   initDashboard();
 }
 
+// ── ساعة ──
 function updateClock(){
   const now = new Date();
   document.getElementById('sidebar-time').textContent =
@@ -739,10 +763,9 @@ function updateClock(){
 }
 setInterval(updateClock, 1000); updateClock();
 
+// ── NAVIGATION ──
 let _allPlayers = [];
 let _currentPage = 'overview';
-let _roomsCache = {};
-const _hiddenRooms = new Set();
 
 window.showPage = function(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -761,38 +784,35 @@ window.showPage = function(id){
   if(id==='settings')   loadSysInfo();
 };
 
+// ── INIT ──
 async function initDashboard(){
   await loadAllPlayers();
   renderOverview();
   setInterval(()=>{ loadAllPlayers().then(()=>{ if(_currentPage==='overview') renderOverview(); }); }, 30000);
 }
 
+// ── LOAD DATA ──
 async function loadAllPlayers(){
   try{
     const snap = await get(r('admin/players'));
     if(snap.exists()){
       _allPlayers = Object.values(snap.val()).sort((a,b)=>b.lastSeen-a.lastSeen);
     }
+    // أيضاً اقرأ rooms لتحديث الغرف الحالية
     return _allPlayers;
   }catch(e){ return []; }
 }
 
-// ══════════════════════════════════════════════════════
-// ✅ FIX 1: getActiveRooms — فقط الغرف التي حالتها playing
-// ══════════════════════════════════════════════════════
 async function getActiveRooms(){
   try{
     const snap = await get(r('rooms'));
     if(!snap.exists()) return 0;
     const rooms = Object.values(snap.val());
-    return rooms.filter(rm=>{
-      // تحقق من المسارين المحتملين للحالة
-      const status = rm.game?.status || rm.status || '';
-      return status === 'playing';
-    }).length;
+    return rooms.filter(rm=>rm.status==='playing'||(rm.players&&Object.keys(rm.players).length>0)).length;
   }catch(e){ return 0; }
 }
 
+// ── OVERVIEW ──
 async function renderOverview(){
   const now = Date.now();
   const today = new Date(); today.setHours(0,0,0,0);
@@ -804,17 +824,23 @@ async function renderOverview(){
   const weekCount  = _allPlayers.filter(p=>p.firstSeen>=weekTs).length;
   const onlineCount = _allPlayers.filter(p=>(now-p.lastSeen)<120000).length;
   const totalSessions = _allPlayers.reduce((s,p)=>s+(p.sessions||0),0);
-
+  // اقرأ totalPlayMs من Firebase مباشرة للحصول على أحدث قيمة
   let freshPlayers = _allPlayers;
   try{
     const freshSnap = await get(r('admin/players'));
     if(freshSnap.exists()) freshPlayers = Object.values(freshSnap.val());
   }catch(e){}
-  const totalPlayMs = freshPlayers.reduce((s,p)=>s+(p.totalPlayMs||0),0);
-  const avgPlayMs   = freshPlayers.filter(p=>p.totalPlayMs>0).length
+  const totalPlayMs   = freshPlayers.reduce((s,p)=>s+(p.totalPlayMs||0),0);
+  const avgPlayMs     = freshPlayers.filter(p=>p.totalPlayMs>0).length
     ? Math.round(totalPlayMs / freshPlayers.filter(p=>p.totalPlayMs>0).length)
     : 0;
-
+  // حدّث _allPlayers بالبيانات الجديدة
+  if(freshPlayers.length) {
+    freshPlayers.forEach(fp=>{
+      const lp = _allPlayers.find(x=>x.uid===fp.uid);
+      if(lp && fp.totalPlayMs) lp.totalPlayMs = fp.totalPlayMs;
+    });
+  }
   const activeRooms = await getActiveRooms();
 
   document.getElementById('stats-grid').innerHTML = `
@@ -853,11 +879,12 @@ async function renderOverview(){
       <div class="stat-icon">⏱</div>
       <div class="stat-val" style="font-size:22px;">${fmtMsShort(avgPlayMs)}</div>
       <div class="stat-lbl">متوسط وقت اللعب</div>
+      <div class="stat-delta up">لاعبون لديهم بيانات: ${freshPlayers.filter(p=>p.totalPlayMs>0).length}</div>
     </div>
     <div class="stat-card" style="--accent:var(--emerald-lt)">
       <div class="stat-icon">🕐</div>
       <div class="stat-val" style="font-size:22px;">${fmtMsShort(totalPlayMs)}</div>
-      <div class="stat-lbl">إجمالي وقت اللعب</div>
+      <div class="stat-lbl">إجمالي وقت اللعب (الكل)</div>
     </div>
     <div class="stat-card" style="--accent:var(--crimson-lt)">
       <div class="stat-icon">🚫</div>
@@ -869,9 +896,11 @@ async function renderOverview(){
   renderBarCharts();
 }
 
+// ── BAR CHARTS ──
 function renderBarCharts(){
   const now = Date.now();
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  // أسبوعي
   const weekly = [];
   for(let i=6;i>=0;i--){
     const dayStart = todayStart.getTime() - i*86400000;
@@ -881,7 +910,10 @@ function renderBarCharts(){
     weekly.push({lbl,cnt});
   }
   renderBar('bar-weekly', weekly);
+
+  // يومي (24 ساعة بـ 6 أجزاء)
   const daily = [];
+  const labels = ['18:00','12:00','06:00','00:00','18س','12س','6س','الآن'];
   for(let i=7;i>=0;i--){
     const t0 = now - i*3*60*60*1000;
     const t1 = t0 + 3*60*60*1000;
@@ -904,6 +936,7 @@ function renderBar(id, data){
   `).join('');
 }
 
+// ── PLAYERS TABLE ──
 function renderPlayersTable(players){
   const el = document.getElementById('players-table-wrap');
   document.getElementById('players-count').textContent = `(${players.length})`;
@@ -924,7 +957,12 @@ function renderPlayersTable(players){
           <td class="td-time">${fmtDate(p.firstSeen)}</td>
           <td class="td-time">${fmtAgo(p.lastSeen)}</td>
           <td class="td-num">${p.sessions||0}</td>
-          <td class="td-time">${fmtMs(p.totalPlayMs)}</td>
+          <td class="td-time">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="min-width:44px;">${fmtMs(p.totalPlayMs)}</span>
+              ${p.totalPlayMs > 0 ? `<div style="flex:1;min-width:40px;background:rgba(160,120,40,.1);border-radius:3px;height:5px;overflow:hidden;"><div style="height:100%;width:${Math.min(100,Math.round((p.totalPlayMs||0)/3600000*100))}%;background:var(--gold);border-radius:3px;min-width:2px;"></div></div>` : ''}
+            </div>
+          </td>
           <td><span class="badge ${p.device==='mobile'?'badge-mobile':'badge-desktop'}">${p.device==='mobile'?'📱 جوال':'💻 كمبيوتر'}</span></td>
           <td class="td-time">${p.country||'—'}</td>
           <td>${p.banned?'<span class="badge badge-banned">محظور</span>':((Date.now()-p.lastSeen)<120000?'<span class="badge badge-online">متصل</span>':'')}</td>
@@ -940,6 +978,7 @@ window.filterPlayers = function(){
   renderPlayersTable(filtered);
 };
 
+// ── PLAYER DETAIL ──
 window.showPlayerDetail = function(uid){
   const p = _allPlayers.find(x=>x.uid===uid); if(!p) return;
   showPage('player-detail');
@@ -965,7 +1004,14 @@ window.showPlayerDetail = function(uid){
       <div class="info-row"><span class="info-key">أول دخول</span><span class="info-val">${fmtDate(p.firstSeen)}</span></div>
       <div class="info-row"><span class="info-key">آخر نشاط</span><span class="info-val">${fmtDate(p.lastSeen)}</span></div>
       <div class="info-row"><span class="info-key">إجمالي الجلسات</span><span class="info-val">${p.sessions||0}</span></div>
-      <div class="info-row"><span class="info-key">وقت اللعب الكلي</span><span class="info-val" style="color:var(--gold);">${fmtMs(p.totalPlayMs)}</span></div>
+      <div class="info-row">
+        <span class="info-key">وقت اللعب الكلي</span>
+        <span class="info-val" style="color:var(--gold);">${fmtMs(p.totalPlayMs)}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">متوسط جلسة</span>
+        <span class="info-val">${(p.sessions && p.totalPlayMs) ? fmtMs(Math.round(p.totalPlayMs/(p.sessions||1))) : '—'}</span>
+      </div>
       <div class="info-row"><span class="info-key">الجهاز</span><span class="info-val">${p.device==='mobile'?'📱 جوال':'💻 كمبيوتر'}</span></div>
       <div class="info-row"><span class="info-key">الدولة</span><span class="info-val">${p.country||'—'}</span></div>
       <div class="info-row"><span class="info-key">الحالة</span><span class="info-val">${p.banned?'🚫 محظور':'✅ نشط'}</span></div>
@@ -973,7 +1019,9 @@ window.showPlayerDetail = function(uid){
   `;
 };
 
+// ── CHARTS PAGE ──
 function renderCharts(){
+  // 30 يوم
   const now = Date.now();
   const el30 = document.getElementById('chart-30d'); if(!el30) return;
   const days30 = [];
@@ -992,6 +1040,7 @@ function renderCharts(){
       <div class="bar-lbl" style="font-size:7px;transform:rotate(-40deg);margin-top:2px;">${d.lbl}</div>
     </div>`).join('')}</div>`;
 
+  // devices
   const mobile  = _allPlayers.filter(p=>p.device==='mobile').length;
   const desktop = _allPlayers.length - mobile;
   const total   = _allPlayers.length || 1;
@@ -1008,6 +1057,7 @@ function renderCharts(){
       <div style="font-size:11px;color:var(--text-dim);">كمبيوتر (${desktop})</div>
     </div>`;
 
+  // countries
   const countries = {};
   _allPlayers.forEach(p=>{ if(p.country) countries[p.country]=(countries[p.country]||0)+1; });
   const sorted = Object.entries(countries).sort((a,b)=>b[1]-a[1]).slice(0,6);
@@ -1019,11 +1069,12 @@ function renderCharts(){
           <div style="flex:1;background:rgba(201,168,76,.1);border-radius:3px;height:6px;overflow:hidden;">
             <div style="height:100%;width:${n/maxC*100}%;background:var(--gold);border-radius:3px;"></div>
           </div>
-          <div style="font-family:var(--mono);font-size:11px;color:var(--gold);width:24px;">${n}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--gold);width:24px;text-align:left;">${n}</div>
         </div>`).join('')
-    : '<div style="color:var(--text-dim);font-size:12px;padding:20px 0;">لا توجد بيانات بعد</div>';
+    : '<div class="empty-text" style="color:var(--text-dim);font-size:12px;padding:20px 0;">لا توجد بيانات بعد</div>';
 }
 
+// ── ACTIVITY ──
 window.loadActivity = async function(){
   const el = document.getElementById('activity-list');
   el.innerHTML = '<div class="loading">جارٍ التحميل <span class="spinner-small"></span></div>';
@@ -1067,29 +1118,45 @@ window.sendAnnouncement = async function(){
   const title = document.getElementById('ann-title').value.trim();
   const body  = document.getElementById('ann-body').value.trim();
   const msgEl = document.getElementById('ann-msg');
-  if(!title||!body){ msgEl.textContent='❌ يجب إدخال العنوان والنص'; return; }
+  if(!title||!body){
+    msgEl.className='tool-msg error';
+    msgEl.textContent='\u274c يجب \u0625\u062f\u062e\u0627\u0644 \u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0648\u0627\u0644\u0646\u0635';
+    return;
+  }
   try{
     const annData = { title, body, ts: Date.now(), active: true };
     await set(r('admin/announcement'), annData);
     await set(r('announcements/current'), annData);
-    await logActivity('announce', '📢 إعلان: ' + title, 'admin');
-    msgEl.textContent = '✅ تم إرسال الإعلان';
+    await logActivity('announce', '\ud83d\udce2 \u0625\u0639\u0644\u0627\u0646: ' + title, 'admin');
+    msgEl.className='tool-msg success';
+    msgEl.textContent = '\u2705 \u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0625\u0639\u0644\u0627\u0646 \u2014 \u0633\u064a\u0638\u0647\u0631 \u0644\u062c\u0645\u064a\u0639 \u0627\u0644\u0644\u0627\u0639\u0628\u064a\u0646';
     checkCurrentAnn();
     setTimeout(()=>msgEl.textContent='', 4000);
-  }catch(e){ msgEl.textContent='❌ فشل: '+e.message; }
+  }catch(e){
+    msgEl.className='tool-msg error';
+    msgEl.textContent='\u274c \u0641\u0634\u0644: '+e.message;
+  }
 };
 
 window.toolBan = async function(){
-  const uid    = document.getElementById('ban-id').value.trim();
-  const reason = document.getElementById('ban-reason').value.trim() || document.getElementById('ban-reason-type').value;
-  const msg    = document.getElementById('ban-msg');
-  if(!uid){ msg.textContent='❌ أدخل Player ID'; return; }
-  showConfirm('تأكيد الحظر', `هل تريد حظر اللاعب: <b>${uid}</b>؟<br><small>السبب: ${reason||'—'}</small>`, async ()=>{
-    await banPlayer(uid, reason);
-    document.getElementById('ban-id').value='';
-    document.getElementById('ban-reason').value='';
-    msg.textContent='✅ تم الحظر'; setTimeout(()=>msg.textContent='',3000);
-  });
+  const uid        = document.getElementById('ban-id').value.trim();
+  const reasonType = document.getElementById('ban-reason-type')?.value || '';
+  const reasonText = document.getElementById('ban-reason').value.trim();
+  const reason     = reasonText || reasonType || '—';
+  const msg        = document.getElementById('ban-msg');
+  if(!uid){ msg.className='tool-msg'; msg.style.color='var(--crimson-lt)'; msg.textContent='❌ أدخل Player ID'; return; }
+  showConfirm(
+    '🚫 تأكيد الحظر',
+    `هل تريد حظر اللاعب: <b style="color:var(--gold-lt);">${uid}</b>؟<br><div style="margin-top:8px;font-size:11px;color:var(--text-muted);">السبب: ${reason}</div>`,
+    async ()=>{
+      await banPlayer(uid, reason);
+      document.getElementById('ban-id').value='';
+      document.getElementById('ban-reason').value='';
+      const rt = document.getElementById('ban-reason-type'); if(rt) rt.value='';
+      msg.style.color='var(--emerald-lt)'; msg.textContent='✅ تم الحظر بنجاح';
+      setTimeout(()=>msg.textContent='',3000);
+    }
+  );
 };
 
 window.toolDelete = async function(){
@@ -1107,23 +1174,42 @@ window.banPlayer = async function(uid, reason=''){
   try{
     const now = Date.now();
     const banReason = reason || '—';
+    // 1. حدّث سجل اللاعع
     await update(r(`admin/players/${uid}`), { banned:true, banReason, bannedAt:now });
+    // 2. أضف في admin/banned بالتفاصيل الكاملة
     await set(r(`admin/banned/${uid}`), { uid, ts:now, reason:banReason, bannedAt:now });
+    // 3. أخرجه من أي غرفة هو فيها (adminKick)
     try{
       const rSnap = await get(r('rooms'));
       if(rSnap.exists()){
+        const updates = {};
         for(const [roomId, room] of Object.entries(rSnap.val())){
-          if(room.players && room.players[uid]){
-            await set(r(`rooms/${roomId}/adminKick/${uid}`), { ts:now, reason:banReason });
+          // البحث في room.players (كائن بـ uid كمفتاح)
+          const inPlayers = room.players && room.players[uid];
+          // البحث في game.players (مصفوفة أو كائن)
+          let inGame = false;
+          if(room.game?.players){
+            const gp = room.game.players;
+            if(Array.isArray(gp)){
+              inGame = gp.some(p=>p?.id===uid);
+            } else {
+              inGame = Object.values(gp).some(p=>p?.id===uid);
+            }
           }
+          if(inPlayers || inGame){
+            updates[`rooms/${roomId}/adminKick/${uid}`] = { ts:now, reason:banReason };
+          }
+        }
+        if(Object.keys(updates).length > 0){
+          await update(r('/'), updates);
         }
       }
     }catch(e2){ console.warn('kick failed', e2); }
     await logActivity('ban', `🚫 حظر: ${uid} — ${banReason}`, 'admin');
     const p = _allPlayers.find(x=>x.uid===uid);
     if(p){ p.banned=true; p.banReason=banReason; p.bannedAt=now; }
-    notify('✅ تم الحظر','success');
-  }catch(e){ notify('❌ فشل الحظر: '+e.message,'error'); }
+    notify('✅ تم الحظر — سيُخرَج من الغرفة فوراً','success');
+  }catch(e){ console.error(e); notify('❌ فشل الحظر: '+e.message,'error'); }
 };
 
 window.unbanPlayer = async function(uid){
@@ -1148,39 +1234,34 @@ window.deletePlayerData = async function(uid){
   }catch(e){ notify('❌ فشل الحذف','error'); }
 };
 
-// ══════════════════════════════════════════════════════════════
-// ROOMS PAGE — مع جميع الإصلاحات
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// ROOMS PAGE
+// ══════════════════════════════════════════════════
+// غرف مخفية محلياً (بدون حذف من Firebase)
+const _hiddenRooms = new Set();
 
-// ✅ FIX 2 & 3: openRoomActions — تحميل بيانات الغرفة من Firebase إذا الكاش فارغ
-window.openRoomActions = async function(roomId){
-  // أحضر البيانات من الكاش أولاً، وإذا ما كانت موجودة اجلبها من Firebase
-  let rm = _roomsCache?.[roomId];
-  if(!rm){
-    try{
-      const snap = await get(r(`rooms/${roomId}`));
-      rm = snap.exists() ? snap.val() : {};
-      if(_roomsCache) _roomsCache[roomId] = rm;
-    }catch(e){ rm = {}; }
-  }
-
-  const game    = rm.game || {};
-  const status  = game.status || rm.status || 'waiting';
-  const isEnded = status === 'ended';
+window.openRoomActions = function(roomId){
+  // جيب بيانات الغرفة من _roomsCache
+  const rm = _roomsCache?.[roomId] || {};
+  const game = rm.game || {};
+  const status = game.status || rm.status || 'waiting';
+  const isEnded = status==='ended';
+  const isPlaying = status==='playing';
 
   const t = document.getElementById('modal-title');
   const b = document.getElementById('modal-body');
   const a = document.getElementById('modal-actions');
   if(!t||!b||!a) return;
 
-  t.innerHTML = `<span style="font-family:var(--mono);font-size:13px;color:var(--gold);">⚙️ إدارة الغرفة: ${roomId}</span>`;
+  t.innerHTML = `<span style="font-family:var(--mono);font-size:13px;color:var(--gold);">⚙️ ${roomId}</span>`;
 
+  // بناء قائمة الإجراءات
   const actions = [];
 
   if(!isEnded){
-    actions.push(`<button class="room-action-btn blue" onclick="closeModal();setTimeout(()=>sendRoomMsgPrompt('${roomId}'),50)">
+    actions.push(`<button class="room-action-btn blue" onclick="closeModal();sendRoomMsgPrompt('${roomId}')">
       <span class="ra-icon">💬</span>
-      <div><div class="ra-title">إرسال رسالة للغرفة</div><div class="ra-sub">تظهر للاعبين في الغرفة فوراً</div></div>
+      <div><div class="ra-title">إرسال رسالة</div><div class="ra-sub">تظهر للاعبين في الغرفة</div></div>
     </button>`);
     actions.push(`<button class="room-action-btn gold" onclick="closeModal();setTimeout(()=>kickAllFromRoom('${roomId}'),50)">
       <span class="ra-icon">👟</span>
@@ -1188,18 +1269,18 @@ window.openRoomActions = async function(roomId){
     </button>`);
     actions.push(`<button class="room-action-btn red" onclick="closeModal();setTimeout(()=>forceEndRoom('${roomId}'),50)">
       <span class="ra-icon">⏹</span>
-      <div><div class="ra-title">إنهاء اللعبة قسراً</div><div class="ra-sub">ينهي الجلسة ويُعلم اللاعبين</div></div>
+      <div><div class="ra-title">إنهاء اللعبة</div><div class="ra-sub">إنهاء قسري مع إعلام اللاعبين</div></div>
     </button>`);
   }
 
   actions.push(`<button class="room-action-btn red" onclick="closeModal();setTimeout(()=>deleteRoom('${roomId}'),50)">
     <span class="ra-icon">🗑️</span>
-    <div><div class="ra-title">حذف من Firebase</div><div class="ra-sub">حذف كامل ونهائي لبيانات الغرفة</div></div>
+    <div><div class="ra-title">حذف من Firebase</div><div class="ra-sub">حذف كامل لبيانات الغرفة</div></div>
   </button>`);
 
-  actions.push(`<button class="room-action-btn red" onclick="closeModal();setTimeout(()=>hideRoom('${roomId}'),50)">
+  actions.push(`<button class="room-action-btn" onclick="closeModal();hideRoom('${roomId}')">
     <span class="ra-icon">🙈</span>
-    <div><div class="ra-title">إخفاء وحذف</div><div class="ra-sub">يختفي فوراً ويُحذف من Firebase</div></div>
+    <div><div class="ra-title">إخفاء من القائمة</div><div class="ra-sub">يختفي من القائمة فقط بدون حذف</div></div>
   </button>`);
 
   b.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;">${actions.join('')}</div>`;
@@ -1207,23 +1288,21 @@ window.openRoomActions = async function(roomId){
   document.getElementById('overlay').classList.add('open');
 };
 
-window.hideRoom = async function(roomId){
-  // أخفِ البطاقة بصرياً فوراً
+window.hideRoom = function(roomId){
+  _hiddenRooms.add(roomId);
   const el = document.querySelector(`[data-room-id="${roomId}"]`);
   if(el){ el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),300); }
-  // ثم احذف من Firebase نهائياً
-  try{
-    await remove(r(`rooms/${roomId}`));
-    if(_roomsCache && _roomsCache[roomId]) delete _roomsCache[roomId];
-    await logActivity('game', `🙈 إخفاء/حذف غرفة: ${roomId}`, 'admin');
-    notify('✅ تم حذف الغرفة نهائياً','success');
-  }catch(e){ notify('❌ فشل الحذف: '+e.message,'error'); }
+  const cnt = document.getElementById('rooms-count');
+  notify('✅ تم إخفاء الغرفة من القائمة','success');
 };
 
+// كاش للغرف
+let _roomsCache = {};
+
 window.loadRooms = async function(){
-  const onlineWrap = document.getElementById('online-players-wrap');
-  const roomsWrap  = document.getElementById('rooms-list-wrap');
-  const statsBar   = document.getElementById('rooms-stats-bar');
+  const onlineWrap  = document.getElementById('online-players-wrap');
+  const roomsWrap   = document.getElementById('rooms-list-wrap');
+  const statsBar    = document.getElementById('rooms-stats-bar');
   if(!onlineWrap||!roomsWrap) return;
 
   const filterVal = document.getElementById('rooms-filter')?.value || 'all';
@@ -1232,7 +1311,9 @@ window.loadRooms = async function(){
   onlineWrap.innerHTML = '<div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>';
   roomsWrap.innerHTML  = '<div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div>';
 
-  // اللاعبون المتصلون
+  // ══════════════════════════════════════════════
+  // اللاعبون المتصلون (نشط خلال آخر دقيقتين)
+  // ══════════════════════════════════════════════
   const online = _allPlayers.filter(p=>(now-p.lastSeen)<120000 && !p.banned);
   document.getElementById('online-count').textContent = `(${online.length})`;
   if(!online.length){
@@ -1257,7 +1338,9 @@ window.loadRooms = async function(){
       </tbody></table>`;
   }
 
+  // ══════════════════════════════════════════════
   // الغرف
+  // ══════════════════════════════════════════════
   try{
     const snap = await get(r('rooms'));
     if(!snap.exists()){
@@ -1271,24 +1354,11 @@ window.loadRooms = async function(){
     _roomsCache = allRoomsRaw;
     const allRooms = Object.entries(allRoomsRaw);
 
-    // ✅ إحصائيات صحيحة — تحقق من المسارين
-    const playing = allRooms.filter(([,rm])=>{
-      const s = rm.game?.status || rm.status || '';
-      return s === 'playing';
-    }).length;
-    const ended = allRooms.filter(([,rm])=>{
-      const s = rm.game?.status || rm.status || '';
-      return s === 'ended';
-    }).length;
-    const waiting = allRooms.filter(([,rm])=>{
-      const s = rm.game?.status || rm.status || '';
-      return s === 'waiting' || s === '' || s === 'lobby';
-    }).length;
-    const totalPlayers = allRooms.reduce((s,[,rm])=>{
-      const p = rm.players ? Object.keys(rm.players).length : 0;
-      const gp = rm.game?.players ? (Array.isArray(rm.game.players) ? rm.game.players.length : Object.keys(rm.game.players).length) : 0;
-      return s + Math.max(p, gp);
-    },0);
+    // ── إحصائيات سريعة
+    const playing = allRooms.filter(([,rm])=>rm.status==='playing'||(rm.game?.status==='playing')).length;
+    const ended   = allRooms.filter(([,rm])=>rm.status==='ended'||(rm.game?.status==='ended')).length;
+    const waiting = allRooms.filter(([,rm])=>rm.status==='waiting'||(!rm.status&&rm.players)).length;
+    const totalPlayers = allRooms.reduce((s,[,rm])=>s+(rm.players?Object.keys(rm.players).length:0),0);
 
     if(statsBar) statsBar.innerHTML = `
       <div class="stat-card" style="--accent:var(--emerald-lt);padding:14px 16px;">
@@ -1312,26 +1382,18 @@ window.loadRooms = async function(){
         <div class="stat-lbl">إجمالي اللاعبين</div>
       </div>`;
 
-    // فلترة
+    // ── فلترة
     let filtered = allRooms;
-    if(filterVal==='playing') filtered = allRooms.filter(([,rm])=>{
-      const s = rm.game?.status || rm.status || '';
-      return s === 'playing';
-    });
-    if(filterVal==='waiting') filtered = allRooms.filter(([,rm])=>{
-      const s = rm.game?.status || rm.status || '';
-      return s === 'waiting' || s === '' || s === 'lobby';
-    });
-    if(filterVal==='ended') filtered = allRooms.filter(([,rm])=>{
-      const s = rm.game?.status || rm.status || '';
-      return s === 'ended';
-    });
+    if(filterVal==='playing') filtered = allRooms.filter(([,rm])=>rm.status==='playing'||rm.game?.status==='playing');
+    if(filterVal==='waiting') filtered = allRooms.filter(([,rm])=>rm.status==='waiting'||(!rm.status&&rm.players&&rm.game?.status!=='ended'));
+    if(filterVal==='ended')   filtered = allRooms.filter(([,rm])=>rm.status==='ended'||rm.game?.status==='ended');
 
+    // ── ترتيب: الأقدم أولاً (أصغر timestamp في الأعلى)
     filtered = filtered.filter(([id])=>!_hiddenRooms.has(id));
     filtered.sort(([,a],[,b])=>{
       const ta = a.game?.startedAt || a.createdAt || 0;
       const tb = b.game?.startedAt || b.createdAt || 0;
-      return tb - ta;
+      return tb - ta;  // الأحدث فوق
     });
 
     document.getElementById('rooms-count').textContent = `(${filtered.length})`;
@@ -1341,10 +1403,11 @@ window.loadRooms = async function(){
       return;
     }
 
+    // ── بطاقات الغرف
     roomsWrap.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;">
       ${filtered.map(([roomId, rm])=>{
         const game     = rm.game || {};
-        const players  = rm.players ? Object.values(rm.players) : (Array.isArray(game.players) ? game.players : Object.values(game.players||{}));
+        const players  = rm.players ? Object.values(rm.players) : (game.players||[]);
         const humans   = players.filter(p=>!p.isBot);
         const bots     = players.filter(p=>p.isBot);
         const status   = game.status || rm.status || 'waiting';
@@ -1352,11 +1415,13 @@ window.loadRooms = async function(){
         const winner   = players.find(p=>p.id===winnerId);
         const isPlaying= status==='playing';
         const isEnded  = status==='ended';
+        const isWaiting= !isPlaying && !isEnded;
         const startTs  = game.startedAt || rm.createdAt;
         const duration = startTs ? Math.round((now - startTs)/60000) : null;
         const turn     = game.turn !== undefined ? game.turn+1 : null;
         const treasury = game.treasury;
 
+        // لون البطاقة حسب الحالة
         const cardBorder = isPlaying ? 'rgba(40,160,90,.3)' : isEnded ? 'rgba(160,120,40,.2)' : 'rgba(42,90,204,.2)';
         const cardAccent = isPlaying ? 'var(--emerald-lt)' : isEnded ? 'var(--gold)' : 'var(--sapphire-lt)';
         const statusBadge = isPlaying
@@ -1365,12 +1430,13 @@ window.loadRooms = async function(){
           ? `<span style="background:rgba(160,120,40,.1);color:var(--gold);border:1px solid rgba(160,120,40,.25);padding:2px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);">✅ منتهية</span>`
           : `<span style="background:rgba(42,90,204,.08);color:var(--sapphire-lt);border:1px solid rgba(42,90,204,.2);padding:2px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);">⏳ انتظار</span>`;
 
+        // عرض اللاعبين
         const playersList = players.map(p=>{
-          const isWinner  = p.id===winnerId;
-          const isElim    = p.eliminated;
-          const isCurTurn = game.turn!==undefined && (Array.isArray(game.players)?game.players[game.turn]:null)?.id===p.id;
-          const coins     = p.coins!==undefined ? p.coins : '?';
-          const cardsLeft = p.cards ? p.cards.filter((_,i)=>!p.revealed?.[i]).length : (p.eliminated?0:2);
+          const isWinner   = p.id===winnerId;
+          const isElim     = p.eliminated;
+          const isCurTurn  = game.turn!==undefined && game.players?.[game.turn]?.id===p.id;
+          const coins      = p.coins!==undefined ? p.coins : '?';
+          const cardsLeft  = p.cards ? p.cards.filter((_,i)=>!p.revealed?.[i]).length : (p.eliminated?0:2);
           return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:${isWinner?'rgba(201,168,76,.1)':isElim?'rgba(176,48,32,.05)':isCurTurn?'rgba(40,160,90,.06)':'rgba(255,255,255,.02)'};border:1px solid ${isWinner?'rgba(201,168,76,.3)':isElim?'rgba(176,48,32,.12)':isCurTurn?'rgba(40,160,90,.2)':'transparent'};margin-bottom:4px;">
             <span style="font-size:18px;">${p.av||'🤴'}</span>
             <div style="flex:1;min-width:0;">
@@ -1383,26 +1449,31 @@ window.loadRooms = async function(){
           </div>`;
         }).join('');
 
+        // صف التفاصيل
         const detailsRow = [
           startTs        ? `⏱ بدأت: ${fmtAgo(startTs)}` : null,
-          duration!==null? `⏳ ${duration}د` : null,
-          turn           ? `🔄 د${turn}` : null,
-          treasury!==undefined ? `🏦 ${treasury}` : null,
-          bots.length    ? `🤖 ${bots.length}` : null,
-        ].filter(Boolean).join(' · ');
+          duration!==null? `⏳ المدة: ${duration}د` : null,
+          turn           ? `🔄 الدور ${turn}` : null,
+          treasury!==undefined ? `🏦 الخزينة: ${treasury}` : null,
+          humans.length  ? `👤 بشر: ${humans.length}` : null,
+          bots.length    ? `🤖 بوتات: ${bots.length}` : null,
+        ].filter(Boolean).join(' &nbsp;·&nbsp; ');
 
-        return `<div onclick="openRoomActions('${roomId}')" data-room-id="${roomId}" style="background:var(--surface);border:1px solid ${cardBorder};border-radius:var(--radius);overflow:hidden;position:relative;cursor:pointer;transition:transform .15s,box-shadow .15s;" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.4)'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
+        return `<div onclick="openRoomActions('${roomId}')" data-room-id="${roomId}" style="background:var(--surface);border:1px solid ${cardBorder};border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);position:relative;cursor:pointer;transition:transform .15s,box-shadow .15s;" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.4)'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
+          <!-- شريط علوي ملون -->
           <div style="height:3px;background:${cardAccent};"></div>
+          <!-- رأس البطاقة -->
           <div style="padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border2);">
             <div>
               <div style="font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:3px;">${roomId}</div>
               ${statusBadge}
             </div>
-            <div style="display:flex;align-items:center;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
               <div style="text-align:left;font-size:10px;color:var(--text-muted);">${detailsRow}</div>
               <span style="font-size:16px;color:var(--text-muted);opacity:.5;">›</span>
             </div>
           </div>
+          <!-- الفائز (إذا انتهت) -->
           ${isEnded && winner ? `
           <div style="padding:10px 16px;background:rgba(201,168,76,.06);border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px;">
             <span style="font-size:24px;">${winner.av||'🤴'}</span>
@@ -1411,10 +1482,12 @@ window.loadRooms = async function(){
               <div style="font-size:14px;font-weight:600;color:var(--gold);">👑 ${esc(winner.name||'—')}</div>
             </div>
           </div>` : ''}
+          <!-- اللاعبون -->
           <div style="padding:12px 16px;">
             <div style="font-size:10px;color:var(--text-muted);letter-spacing:1px;margin-bottom:8px;font-family:var(--mono);">اللاعبون (${players.length})</div>
             ${playersList || '<div style="font-size:12px;color:var(--text-muted);">لا يوجد لاعبون</div>'}
           </div>
+          <!-- تلميح -->
           <div style="padding:8px 16px;border-top:1px solid var(--border2);background:var(--surface2);font-size:10px;color:var(--text-muted);text-align:center;">اضغط للتحكم في الغرفة</div>
         </div>`;
       }).join('')}
@@ -1422,81 +1495,37 @@ window.loadRooms = async function(){
 
   }catch(e){
     console.error(e);
-    roomsWrap.innerHTML = `<div class="empty"><div class="empty-text">خطأ: ${e.message}</div></div>`;
+    roomsWrap.innerHTML = `<div class="empty"><div class="empty-text">خطأ في تحميل الغرف: ${e.message}</div></div>`;
   }
 };
 
-// ✅ FIX 3: kickAllFromRoom — يقرأ اللاعبين من المسارين (players + game.players)
 window.kickAllFromRoom = async function(roomId){
   showConfirm('👟 إخراج الكل', `هل تريد إخراج جميع لاعبي الغرفة <b>${roomId}</b>؟`, async ()=>{
     try{
-      const updates = {};
-      const now = Date.now();
-
-      // المسار 1: rooms/roomId/players (كائن بـ uid كمفتاح)
-      const snapPlayers = await get(r(`rooms/${roomId}/players`));
-      if(snapPlayers.exists()){
-        Object.keys(snapPlayers.val()).forEach(pid=>{
-          updates[`rooms/${roomId}/adminKick/${pid}`] = { ts:now, reason:'admin kick' };
+      const snap = await get(r(`rooms/${roomId}/players`));
+      if(snap.exists()){
+        const updates = {};
+        Object.keys(snap.val()).forEach(pid=>{
+          updates[`rooms/${roomId}/adminKick/${pid}`] = { ts:Date.now(), reason:'admin kick' };
         });
-      }
-
-      // المسار 2: rooms/roomId/game/players (مصفوفة أو كائن)
-      const snapGame = await get(r(`rooms/${roomId}/game/players`));
-      if(snapGame.exists()){
-        const gp = snapGame.val();
-        const pids = Array.isArray(gp)
-          ? gp.map(p=>p?.id).filter(Boolean)
-          : Object.values(gp).map(p=>p?.id).filter(Boolean);
-        pids.forEach(pid=>{
-          updates[`rooms/${roomId}/adminKick/${pid}`] = { ts:now, reason:'admin kick' };
-        });
-      }
-
-      if(Object.keys(updates).length > 0){
         await update(r('/'), updates);
       }
-
-      // أرسل رسالة نظام وأنهِ الغرفة
-      await set(r(`rooms/${roomId}/systemMsg`), { text:'⚠️ تم إخراج جميع اللاعبين من قِبَل الإدارة.', ts:now });
-      await set(r(`rooms/${roomId}/adminForceEnd`), { ts:now, reason:'admin kicked all' });
+      await set(r(`rooms/${roomId}/systemMsg`), { text:'⚠️ تم إخراج جميع اللاعبين من قِبَل الإدارة.', ts:Date.now() });
       await logActivity('game', `👟 إخراج كل لاعبي الغرفة: ${roomId}`, 'admin');
-      notify('✅ تم إخراج جميع اللاعبين','success');
+      notify('✅ تم إخراج الكل','success');
       setTimeout(loadRooms, 1500);
-    }catch(e){ console.error(e); notify('❌ فشل: '+e.message,'error'); }
+    }catch(e){ notify('❌ فشل','error'); }
   });
 };
 
-// ✅ FIX 4: forceEndRoom — يحدث جميع مسارات الحالة
-window.forceEndRoom = async function(roomId){
-  showConfirm('⏹ إنهاء الغرفة', `هل تريد إنهاء الغرفة <b>${roomId}</b> قسراً؟`, async ()=>{
-    try{
-      const now = Date.now();
-      // حدّث كل مسارات الحالة المحتملة في عملية واحدة
-      const updates = {
-        [`rooms/${roomId}/status`]: 'ended',
-        [`rooms/${roomId}/game/status`]: 'ended',
-        [`rooms/${roomId}/adminForceEnd`]: { ts:now, by:'admin' },
-        [`rooms/${roomId}/systemMsg`]: { text:'🛑 تم إنهاء هذه الغرفة من قِبَل الإدارة.', ts:now },
-      };
-      await update(r('/'), updates);
-      await logActivity('game', `⏹ إنهاء قسري للغرفة: ${roomId}`, 'admin');
-      notify('✅ تم إنهاء الغرفة','success');
-      setTimeout(loadRooms, 1500);
-    }catch(e){ console.error(e); notify('❌ فشل: '+e.message,'error'); }
-  });
-};
-
-// ✅ FIX 5: deleteRoom — مع حذف من الكاش المحلي
 window.deleteRoom = async function(roomId){
-  showConfirm('🗑️ حذف الغرفة', `هل تريد حذف الغرفة <b>${roomId}</b> من Firebase نهائياً؟<br><small style="color:var(--crimson-lt);">⚠️ لا يمكن التراجع عن هذا الإجراء</small>`, async ()=>{
+  showConfirm('🗑️ حذف الغرفة', `هل تريد حذف بيانات الغرفة <b>${roomId}</b> من Firebase نهائياً؟`, async ()=>{
     try{
       await remove(r(`rooms/${roomId}`));
       await logActivity('game', `🗑️ حذف غرفة: ${roomId}`, 'admin');
-      if(_roomsCache && _roomsCache[roomId]) delete _roomsCache[roomId];
-      notify('✅ تم حذف الغرفة نهائياً','success');
+      notify('✅ تم حذف الغرفة','success');
       setTimeout(loadRooms, 800);
-    }catch(e){ console.error(e); notify('❌ فشل: '+e.message,'error'); }
+    }catch(e){ notify('❌ فشل','error'); }
   });
 };
 
@@ -1522,7 +1551,20 @@ window.doSendRoomMsg = async function(roomId){
   }catch(e){ notify('❌ فشل الإرسال','error'); }
 };
 
-// ── COPY / REWARD / UNBAN / EXPORT ──
+window.forceEndRoom = async function(roomId){
+  showConfirm('⏹ إنهاء الغرفة', `هل تريد إنهاء الغرفة <b>${roomId}</b> قسراً؟<br><small>سيُعلَم اللاعبون وتُحذف بياناتها.</small>`, async ()=>{
+    try{
+      await set(r(`rooms/${roomId}/systemMsg`), { text:'🛑 تم إنهاء هذه الغرفة من قِبَل الإدارة.', ts:Date.now() });
+      await set(r(`rooms/${roomId}/status`), 'ended');
+      await logActivity('game', `⏹ إنهاء قسري للغرفة: ${roomId}`, 'admin');
+      notify('✅ تم إنهاء الغرفة','success');
+      setTimeout(loadRooms, 1500);
+    }catch(e){ notify('❌ فشل','error'); }
+  });
+};
+
+
+// ── TOOLS: COPY / REWARD / UNBAN / EXPORT ──
 window.copyResults = function(){
   const q = document.getElementById('tool-search').value.trim().toLowerCase();
   const found = _allPlayers.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.uid||'').includes(q));
@@ -1541,22 +1583,23 @@ window.selectReward = function(el, type){
 window.grantReward = async function(){
   const uid = document.getElementById('reward-id').value.trim();
   const msg = document.getElementById('reward-msg');
-  if(!uid){ msg.textContent='❌ أدخل Player ID'; return; }
-  if(!_selectedReward){ msg.textContent='❌ اختر نوع المكافأة'; return; }
+  if(!uid){ msg.className='tool-msg error'; msg.textContent='❌ أدخل Player ID'; return; }
+  if(!_selectedReward){ msg.className='tool-msg error'; msg.textContent='❌ اختر نوع المكافأة'; return; }
   try{
     await push(r('admin/rewards'), { uid, type:_selectedReward, ts:Date.now(), status:'pending' });
     await logActivity('game', `🎁 مكافأة ${_selectedReward} → ${uid}`, 'admin');
-    msg.textContent='✅ تمت إضافة المكافأة';
+    msg.className='tool-msg success'; msg.textContent='✅ تمت إضافة المكافأة';
     document.getElementById('reward-id').value='';
     _selectedReward='';
     document.querySelectorAll('.reward-btn').forEach(b=>b.classList.remove('active'));
     setTimeout(()=>msg.textContent='',3000);
-  }catch(e){ msg.textContent='❌ فشل: '+e.message; }
+  }catch(e){ msg.className='tool-msg error'; msg.textContent='❌ فشل: '+e.message; }
 };
 
 window.toolUnban = async function(){
   const uid = document.getElementById('ban-id').value.trim();
-  if(!uid){ notify('❌ أدخل Player ID','error'); return; }
+  const msg = document.getElementById('ban-msg');
+  if(!uid){ msg.className='tool-msg error'; msg.textContent='❌ أدخل Player ID'; return; }
   await unbanPlayer(uid);
   document.getElementById('ban-id').value='';
 };
@@ -1564,6 +1607,10 @@ window.toolUnban = async function(){
 window.exportPlayer = function(){
   const uid = document.getElementById('del-id').value.trim();
   if(!uid){ notify('❌ أدخل Player ID','error'); return; }
+  exportPlayerDirect(uid);
+};
+
+window.exportPlayerDirect = function(uid){
   const p = _allPlayers.find(x=>x.uid===uid);
   if(!p){ notify('❌ لاعب غير موجود','error'); return; }
   const blob = new Blob([JSON.stringify(p, null, 2)], {type:'application/json'});
@@ -1572,6 +1619,10 @@ window.exportPlayer = function(){
   a.download = `player_${uid.slice(0,8)}.json`;
   a.click();
   notify('✅ تم تصدير البيانات','success');
+};
+
+window.copyUID = function(uid){
+  navigator.clipboard.writeText(uid).then(()=>notify('✅ تم نسخ الـ ID','success'));
 };
 
 // ── BROADCAST ──
@@ -1619,19 +1670,19 @@ window.sendRoomMsg = async function(){
   const roomId  = document.getElementById('room-id-msg').value.trim();
   const msgBody = document.getElementById('room-msg-body').value.trim();
   const status  = document.getElementById('room-msg-status');
-  if(!roomId||!msgBody){ status.textContent='❌ أدخل الـ Room ID والرسالة'; return; }
+  if(!roomId||!msgBody){ status.className='tool-msg error'; status.textContent='❌ أدخل الـ Room ID والرسالة'; return; }
   try{
     await set(r(`rooms/${roomId}/systemMsg`), { text:msgBody, ts:Date.now() });
-    status.textContent='✅ تم إرسال الرسالة للغرفة';
+    status.className='tool-msg success'; status.textContent='✅ تم إرسال الرسالة للغرفة';
     setTimeout(()=>status.textContent='',3000);
-  }catch(e){ status.textContent='❌ فشل: '+e.message; }
+  }catch(e){ status.className='tool-msg error'; status.textContent='❌ فشل: '+e.message; }
 };
 
 window.sendTargetedNotif = async function(){
   const target = document.getElementById('notif-target').value;
   const msg    = document.getElementById('notif-msg').value.trim();
   const status = document.getElementById('notif-target-msg');
-  if(!msg){ status.textContent='❌ أدخل نص الإشعار'; return; }
+  if(!msg){ status.className='tool-msg error'; status.textContent='❌ أدخل نص الإشعار'; return; }
   let targets = _allPlayers;
   if(target==='online')  targets = targets.filter(p=>(Date.now()-p.lastSeen)<120000);
   if(target==='mobile')  targets = targets.filter(p=>p.device==='mobile');
@@ -1639,9 +1690,9 @@ window.sendTargetedNotif = async function(){
   try{
     await set(r('admin/targeted_notif'), { msg, target, count:targets.length, ts:Date.now() });
     await logActivity('announce', `🔔 إشعار لـ ${targets.length} لاعب (${target})`, 'admin');
-    status.textContent=`✅ تم الإرسال لـ ${targets.length} لاعب`;
+    status.className='tool-msg success'; status.textContent=`✅ تم الإرسال لـ ${targets.length} لاعب`;
     setTimeout(()=>status.textContent='',4000);
-  }catch(e){ status.textContent='❌ فشل'; }
+  }catch(e){ status.className='tool-msg error'; status.textContent='❌ فشل'; }
 };
 
 // ── MODERATION ──
@@ -1691,23 +1742,25 @@ async function loadSysInfo(){
 }
 
 window.saveGameSettings = async function(){
-  const maxPlayers  = document.getElementById('max-players-range')?.value;
-  const roomTimeout = document.getElementById('room-timeout-range')?.value;
+  const maxPlayers   = document.getElementById('max-players-range')?.value;
+  const roomTimeout  = document.getElementById('room-timeout-range')?.value;
   const msg = document.getElementById('settings-msg');
   try{
     await set(r('admin/settings'),{ maxPlayersPerRoom:parseInt(maxPlayers), roomTimeoutMin:parseInt(roomTimeout), updatedAt:Date.now() });
-    msg.textContent='✅ تم حفظ الإعدادات';
+    msg.className='tool-msg success'; msg.textContent='✅ تم حفظ الإعدادات';
     setTimeout(()=>msg.textContent='',3000);
-  }catch(e){ msg.textContent='❌ فشل الحفظ'; }
+  }catch(e){ msg.className='tool-msg error'; msg.textContent='❌ فشل الحفظ'; }
 };
 
 window.changeAdminPass = function(){
-  const np  = document.getElementById('new-password').value;
-  const cp  = document.getElementById('confirm-password').value;
+  const np = document.getElementById('new-password').value;
+  const cp = document.getElementById('confirm-password').value;
   const msg = document.getElementById('pass-msg');
-  if(!np||np.length<8){ msg.textContent='❌ كلمة المرور يجب أن تكون 8 أحرف على الأقل'; return; }
-  if(np!==cp){ msg.textContent='❌ كلمتا المرور غير متطابقتين'; return; }
-  msg.textContent='✅ تم تغيير كلمة المرور (في الجلسة الحالية فقط)';
+  if(!np||np.length<8){ msg.className='tool-msg error'; msg.textContent='❌ كلمة المرور يجب أن تكون 8 أحرف على الأقل'; return; }
+  if(np!==cp){ msg.className='tool-msg error'; msg.textContent='❌ كلمتا المرور غير متطابقتين'; return; }
+  ADMIN_PASS=np;
+  localStorage.setItem(ADMIN_PASS_KEY, np);
+  msg.className='tool-msg success'; msg.textContent='✅ تم تغيير كلمة المرور';
   document.getElementById('new-password').value='';
   document.getElementById('confirm-password').value='';
   setTimeout(()=>msg.textContent='',3000);
@@ -1733,13 +1786,13 @@ window.purgeOldActivity = async function(){
         Object.entries(snap.val()).forEach(([k,v])=>{ if(v.ts<cutoff) updates[k]=null; });
         if(Object.keys(updates).length){
           await update(r('admin/activity'), updates);
-          msg.textContent=`✅ تم حذف ${Object.keys(updates).length} سجل`;
+          msg.className='tool-msg success'; msg.textContent=`✅ تم حذف ${Object.keys(updates).length} سجل`;
         } else {
-          msg.textContent='✅ لا توجد سجلات قديمة';
+          msg.className='tool-msg success'; msg.textContent='✅ لا توجد سجلات قديمة';
         }
         setTimeout(()=>msg.textContent='',3000);
       }
-    }catch(e){ msg.textContent='❌ فشل'; }
+    }catch(e){ msg.className='tool-msg error'; msg.textContent='❌ فشل'; }
   });
 };
 
@@ -1747,7 +1800,6 @@ window.purgeOldActivity = async function(){
 // 🧹 حذف الغرف المنتهية القديمة
 // ══════════════════════════════════════════════════════
 window.purgeOldRoomsPrompt = async function(){
-  // أولاً: احسب كم غرفة ستُحذف لكل فترة
   let counts = { h24:0, d3:0, d7:0, d30:0, all:0 };
   try{
     const snap = await get(r('rooms'));
@@ -1758,11 +1810,11 @@ window.purgeOldRoomsPrompt = async function(){
         const s = rm.game?.status || rm.status || '';
         return s === 'ended';
       });
-      counts.h24  = ended.filter(([,rm])=>(now-(rm.game?.startedAt||rm.createdAt||now))>86400000).length;
-      counts.d3   = ended.filter(([,rm])=>(now-(rm.game?.startedAt||rm.createdAt||now))>3*86400000).length;
-      counts.d7   = ended.filter(([,rm])=>(now-(rm.game?.startedAt||rm.createdAt||now))>7*86400000).length;
-      counts.d30  = ended.filter(([,rm])=>(now-(rm.game?.startedAt||rm.createdAt||now))>30*86400000).length;
-      counts.all  = ended.length;
+      counts.h24 = ended.filter(([,rm])=>(now-(rm.game?.startedAt||rm.createdAt||now))>86400000).length;
+      counts.d3  = ended.filter(([,rm])=>(now-(rm.game?.startedAt||rm.createdAt||now))>3*86400000).length;
+      counts.d7  = ended.filter(([,rm])=>(now-(rm.game?.startedAt||rm.createdAt||now))>7*86400000).length;
+      counts.d30 = ended.filter(([,rm])=>(now-(rm.game?.startedAt||rm.createdAt||now))>30*86400000).length;
+      counts.all = ended.length;
     }
   }catch(e){ console.error(e); }
 
@@ -1801,53 +1853,38 @@ window.purgeOldRoomsPrompt = async function(){
 window.purgeOldRooms = async function(olderThanMs){
   const msgEl = document.getElementById('purge-rooms-msg');
   if(msgEl){ msgEl.innerHTML='<div class="status-banner info" style="margin-bottom:12px;"><span class="spinner-small"></span> جارٍ الحذف...</div>'; }
-
   try{
     const snap = await get(r('rooms'));
     if(!snap.exists()){ notify('لا توجد غرف','error'); return; }
-
     const now = Date.now();
-    const allRooms = Object.entries(snap.val());
-    const toDelete = allRooms.filter(([,rm])=>{
+    const toDelete = Object.entries(snap.val()).filter(([,rm])=>{
       const s = rm.game?.status || rm.status || '';
       if(s !== 'ended') return false;
-      if(olderThanMs === 0) return true; // كل المنتهية
+      if(olderThanMs === 0) return true;
       const ts = rm.game?.startedAt || rm.createdAt || 0;
       return ts > 0 && (now - ts) > olderThanMs;
     });
-
     if(!toDelete.length){
       if(msgEl){ msgEl.innerHTML='<div class="status-banner ok" style="margin-bottom:12px;">✅ لا توجد غرف تستوفي الشرط</div>'; setTimeout(()=>msgEl.innerHTML='',4000); }
-      notify('لا توجد غرف للحذف','success');
       return;
     }
-
-    // حذف على دفعات (Firebase has limits)
     let deleted = 0;
-    const BATCH = 20;
-    for(let i=0; i<toDelete.length; i+=BATCH){
-      const batch = toDelete.slice(i, i+BATCH);
+    for(let i=0; i<toDelete.length; i+=20){
+      const batch = toDelete.slice(i, i+20);
       const updates = {};
       batch.forEach(([id])=>{ updates[`rooms/${id}`] = null; });
       await update(r('/'), updates);
       deleted += batch.length;
-      if(msgEl){ msgEl.innerHTML=`<div class="status-banner info" style="margin-bottom:12px;"><span class="spinner-small"></span> جارٍ الحذف... ${deleted}/${toDelete.length}</div>`; }
+      if(msgEl) msgEl.innerHTML=`<div class="status-banner info" style="margin-bottom:12px;"><span class="spinner-small"></span> جارٍ الحذف... ${deleted}/${toDelete.length}</div>`;
     }
-
-    await logActivity('game', `🧹 حذف ${deleted} غرفة منتهية قديمة`, 'admin');
-
-    // تنظيف الكاش المحلي
     toDelete.forEach(([id])=>{ if(_roomsCache[id]) delete _roomsCache[id]; });
-
-    if(msgEl){
-      msgEl.innerHTML=`<div class="status-banner ok" style="margin-bottom:12px;">✅ تم حذف ${deleted} غرفة منتهية بنجاح</div>`;
-      setTimeout(()=>{ if(msgEl) msgEl.innerHTML=''; }, 5000);
-    }
+    await logActivity('game', `🧹 حذف ${deleted} غرفة منتهية قديمة`, 'admin');
+    if(msgEl){ msgEl.innerHTML=`<div class="status-banner ok" style="margin-bottom:12px;">✅ تم حذف ${deleted} غرفة بنجاح</div>`; setTimeout(()=>{ if(msgEl) msgEl.innerHTML=''; }, 5000); }
     notify(`✅ تم حذف ${deleted} غرفة`,'success');
     setTimeout(loadRooms, 1000);
   }catch(e){
     console.error(e);
-    if(msgEl){ msgEl.innerHTML=`<div class="status-banner warn" style="margin-bottom:12px;">❌ فشل الحذف: ${e.message}</div>`; }
+    if(msgEl) msgEl.innerHTML=`<div class="status-banner warn" style="margin-bottom:12px;">❌ فشل: ${e.message}</div>`;
     notify('❌ فشل: '+e.message,'error');
   }
 };
@@ -1864,7 +1901,12 @@ window.showConfirm = function(title, body, onOk){
   document.getElementById('modal-body').innerHTML  = body;
   document.getElementById('modal-actions').innerHTML = `
     <button class="tool-btn" style="background:rgba(255,255,255,.05);border-color:var(--border);color:var(--text-dim);" onclick="closeModal()">إلغاء</button>
-    <button class="tool-btn red" onclick="closeModal();if(_pendingConfirmCb){_pendingConfirmCb();_pendingConfirmCb=null;}">تأكيد</button>`;
+    <button class="tool-btn red" id="confirm-ok-btn" onclick="
+      closeModal();
+      const cb = _pendingConfirmCb;
+      _pendingConfirmCb = null;
+      if(cb){ Promise.resolve(cb()).catch(e=>{ console.error(e); window.notify('❌ خطأ: '+e.message,'error'); }); }
+    ">تأكيد</button>`;
   document.getElementById('overlay').classList.add('open');
 };
 window.closeModal = ()=>document.getElementById('overlay').classList.remove('open');
@@ -1896,18 +1938,63 @@ function fmtMs(ms){
   const h = Math.floor(ms/3600000);
   const m = Math.floor((ms%3600000)/60000);
   const s = Math.floor((ms%60000)/1000);
-  if(h) return `${h}س ${m}د`;
-  if(m) return `${m}د ${s}ث`;
+  if(h)  return `${h}س ${m}د`;
+  if(m)  return `${m}د ${s}ث`;
   return `${s}ث`;
 }
 function fmtMsShort(ms){
+  // للبطاقات الإحصائية
   if(!ms || ms <= 0) return '—';
   const h = Math.floor(ms/3600000);
   const m = Math.floor((ms%3600000)/60000);
-  if(h) return `${h}س ${m}د`;
-  if(m) return `${m}د`;
+  if(h)  return `${h}س ${m}د`;
+  if(m)  return `${m}د`;
   return Math.floor(ms/1000)+'ث';
 }
 </script>
+
+<!-- ══════════════════════════════════════════════════════
+     الكود الذي يُضاف في coup_fixed.html لتتبع اللاعبين
+     أضف هذا الكود في بداية script الرئيسي للعبة
+═══════════════════════════════════════════════════════ -->
+<!-- 
+TRACKING CODE (add to coup_fixed.html):
+
+async function trackPlayer(name, av) {
+  if (!name || !uid()) return;
+  const pid = uid();
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+  let country = '—';
+  try {
+    const geoRes = await fetch('https://ipapi.co/json/');
+    const geo = await geoRes.json();
+    country = geo.country_name || '—';
+  } catch(e) {}
+  
+  const now = Date.now();
+  const existing = await dbGet(`admin/players/${pid}`);
+  
+  if (!existing) {
+    await dbSet(`admin/players/${pid}`, {
+      uid: pid, name, av,
+      firstSeen: now, lastSeen: now,
+      sessions: 1, totalPlayMs: 0,
+      device: isMobile ? 'mobile' : 'desktop',
+      country
+    });
+    await dbPush('admin/activity', { type:'join', msg:`🟢 لاعب جديد: ${name}`, uid: pid, ts: now });
+  } else {
+    await dbUpdate(`admin/players/${pid}`, {
+      lastSeen: now, name, av,
+      sessions: (existing.sessions || 0) + 1
+    });
+  }
+}
+
+// استدعِ trackPlayer عند إنشاء الغرفة والانضمام:
+// في createRoom()  → trackPlayer(name, ME.av)
+// في joinRoom()    → trackPlayer(name, ME.av)
+// في startSolo()   → trackPlayer(name, ME.av)
+-->
 </body>
 </html>
