@@ -1260,6 +1260,10 @@ window.openRoomActions = function(roomId){
   const actions = [];
 
   if(!isEnded){
+    actions.push(`<button class="room-action-btn blue" onclick="showRoomPlayers('${roomId}')">
+      <span class="ra-icon">👥</span>
+      <div><div class="ra-title">اللاعبون في الغرفة</div><div class="ra-sub">عرض تفاصيل اللاعبين وإجراءات فردية</div></div>
+    </button>`);
     actions.push(`<button class="room-action-btn blue" onclick="closeModal();sendRoomMsgPrompt('${roomId}')">
       <span class="ra-icon">💬</span>
       <div><div class="ra-title">إرسال رسالة</div><div class="ra-sub">تظهر للاعبين في الغرفة</div></div>
@@ -1354,6 +1358,78 @@ window.doDeleteRoom = async function(roomId){
     notify('✅ تم حذف الغرفة نهائياً','success');
     setTimeout(loadRooms, 800);
   }catch(e){ console.error(e); notify('❌ فشل: '+e.message,'error'); }
+};
+
+
+// ── عرض لاعبي الغرفة مع تفاصيل وإجراءات
+window.showRoomPlayers = function(roomId){
+  const rm = _roomsCache?.[roomId] || {};
+  const game = rm.game || {};
+
+  // اجمع اللاعبين من المسارين
+  let players = [];
+  if(rm.players && typeof rm.players === 'object' && !Array.isArray(rm.players)){
+    players = Object.values(rm.players);
+  }
+  if(!players.length && game.players){
+    players = Array.isArray(game.players) ? game.players : Object.values(game.players);
+  }
+
+  const t = document.getElementById('modal-title');
+  const b = document.getElementById('modal-body');
+  const a = document.getElementById('modal-actions');
+
+  t.innerHTML = `<span style="font-family:var(--mono);font-size:12px;color:var(--gold);">👥 لاعبو الغرفة: ${roomId}</span>`;
+
+  if(!players.length){
+    b.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">لا يوجد لاعبون في هذه الغرفة</div></div>';
+  } else {
+    const winnerId = game.winnerId;
+    b.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;">
+      ${players.map(p=>{
+        const pid      = p.id || p.uid || '';
+        const isBot    = !!p.isBot;
+        const isWinner = pid === winnerId;
+        const isElim   = !!p.eliminated;
+        const pData    = _allPlayers.find(x => x.uid === pid);
+        const coins    = p.coins !== undefined ? p.coins : '?';
+        const cards    = p.cards ? p.cards.filter((_,i)=>!p.revealed?.[i]).length : (isElim?0:2);
+        return `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;
+          background:${isWinner?'rgba(201,168,76,.08)':isElim?'rgba(176,48,32,.04)':'rgba(255,255,255,.02)'};
+          border:1px solid ${isWinner?'rgba(201,168,76,.25)':isElim?'rgba(176,48,32,.12)':'var(--border2)'};
+          border-radius:10px;">
+          <span style="font-size:24px;">${p.av||'🤴'}</span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:500;color:${isWinner?'var(--gold)':isElim?'var(--text-muted)':'var(--text)'};">
+              ${isWinner?'👑 ':''}${isElim?'💀 ':''}${esc(p.name||'—')}${isBot?' 🤖':''}
+            </div>
+            <div style="font-size:10px;color:var(--text-muted);font-family:var(--mono);margin-top:2px;">
+              ${pid?pid.slice(0,14):'—'} · ${coins}🪙 · ${cards}🃏
+              ${pData ? ` · ${pData.sessions||0} جلسة` : ''}
+            </div>
+          </div>
+          ${!isBot && pid ? `
+          <div style="display:flex;gap:6px;">
+            <button onclick="closeModal();showPlayerDetail('${pid}')"
+              style="padding:5px 10px;font-size:11px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-dim);cursor:pointer;">👤 ملف</button>
+            ${pData?.banned
+              ? `<button onclick="closeModal();unbanPlayer('${pid}')"
+                  style="padding:5px 10px;font-size:11px;border-radius:6px;border:1px solid rgba(42,90,204,.3);background:rgba(42,90,204,.06);color:var(--sapphire-lt);cursor:pointer;">🔓 رفع</button>`
+              : `<button onclick="closeModal();banPlayer('${pid}','مشكلة في الغرفة')"
+                  style="padding:5px 10px;font-size:11px;border-radius:6px;border:1px solid rgba(176,48,32,.3);background:rgba(176,48,32,.06);color:var(--crimson-lt);cursor:pointer;">🚫 حظر</button>`
+            }
+          </div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  a.innerHTML = `
+    <button class="tool-btn" style="background:var(--surface2);border-color:var(--border2);color:var(--text-dim);"
+      onclick="openRoomActions('${roomId}')">← رجوع</button>
+    <button class="tool-btn" style="background:var(--surface2);border-color:var(--border2);color:var(--text-dim);"
+      onclick="closeModal()">إغلاق</button>`;
+  document.getElementById('overlay').classList.add('open');
 };
 
 window.loadRooms = async function(){
