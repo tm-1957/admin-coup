@@ -77,7 +77,36 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   background:var(--surface);
   border-left:1px solid var(--border);
   display:flex;flex-direction:column;
-  z-index:100;
+  z-index:200;
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+}
+.sidebar.collapsed{ transform:translateX(240px); }
+.sidebar-toggle{
+  position:fixed;top:14px;right:14px;z-index:201;
+  width:38px;height:38px;border-radius:10px;
+  background:var(--surface);border:1px solid var(--border2);
+  color:var(--gold);font-size:18px;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  transition:.15s;box-shadow:0 2px 12px rgba(0,0,0,.3);
+}
+.sidebar-toggle:hover{ background:rgba(201,168,76,.1); }
+.sidebar-close-btn{
+  position:absolute;top:14px;left:14px;
+  width:30px;height:30px;border-radius:8px;
+  background:rgba(255,255,255,.06);border:1px solid var(--border2);
+  color:var(--text-dim);font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.sidebar-close-btn:hover{ color:var(--text); background:rgba(255,255,255,.1); }
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;
+}
+@media(max-width:768px){
+  .sidebar-toggle{ display:flex; }
+  .sidebar{ transform:translateX(240px); }
+  .sidebar.open{ transform:translateX(0); }
+  .main{ margin-right:0 !important; padding:16px; }
+  .sidebar-overlay.visible{ display:block; }
 }
 .sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid var(--border2);}
 .sidebar-logo .s-title{font-family:'Cinzel Decorative',serif;font-size:16px;color:var(--gold);letter-spacing:2px;}
@@ -331,6 +360,12 @@ svg.line-chart{width:100%;height:120px;}
 .report-msg{font-size:13px;color:var(--text);margin-bottom:6px;line-height:1.6;}
 .report-meta{font-size:10px;color:var(--text-muted);font-family:var(--mono);}
 
+/* Admin light theme */
+body.admin-light{ --bg:#f4f1ea; --surface:#fff; --surface2:#f9f7f3; --text:#1a1612; --text-dim:#5a5048; --text-muted:#8a7a6a; --border:rgba(0,0,0,.1); --border2:rgba(0,0,0,.07); }
+body.admin-light .sidebar{ background:#fff; }
+body.admin-light .table-wrap,body.admin-light .chart-card,body.admin-light .tool-card,body.admin-light .detail-card{ background:#fff; border-color:rgba(0,0,0,.08); }
+body.admin-light table thead{ background:rgba(0,0,0,.03); }
+body.admin-light .nav-item:hover{ background:rgba(0,0,0,.04); }
 /* empty state */
 .empty{text-align:center;padding:48px 20px;color:var(--text-dim);}
 .empty-icon{font-size:40px;margin-bottom:12px;}
@@ -356,7 +391,8 @@ svg.line-chart{width:100%;height:120px;}
 <div id="app">
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="sidebar-logo">
+    <div class="sidebar-logo" style="position:relative;">
+      <button class="sidebar-close-btn" onclick="closeSidebar()" title="إغلاق القائمة">✕</button>
       <div class="s-title">COUP™</div>
       <div class="s-sub">ADMIN PANEL</div>
     </div>
@@ -670,12 +706,12 @@ svg.line-chart{width:100%;height:120px;}
     <!-- SETTINGS -->
     <div class="page" id="page-settings">
       <div class="page-header">
-        <div>
-          <div class="page-title">الإعدادات</div>
-          <div class="page-sub">إعدادات اللعبة والنظام</div>
-        </div>
+        <div class="page-title">⚙️ الإعدادات</div>
+        <div class="page-sub">إعدادات اللعبة والنظام ولوحة التحكم</div>
       </div>
       <div class="tools-grid">
+
+        <!-- 🎮 إعدادات اللعبة -->
         <div class="tool-card">
           <div class="tool-title">🎮 إعدادات اللعبة</div>
           <div class="tool-desc">التحكم في معاملات اللعبة</div>
@@ -694,32 +730,88 @@ svg.line-chart{width:100%;height:120px;}
           </div>
           <div class="tool-msg" id="settings-msg"></div>
         </div>
+
+        <!-- 🌐 إعدادات لوحة التحكم -->
         <div class="tool-card">
-          <div class="tool-title">🔒 إعدادات الأمان</div>
+          <div class="tool-title">🌐 لوحة التحكم</div>
+          <div class="tool-desc">تخصيص تجربة الأدمن</div>
+
+          <div style="font-size:12px;color:var(--text-muted);margin:10px 0 6px;">اللغة</div>
+          <div style="display:flex;gap:8px;margin-bottom:14px;">
+            <button id="admin-lang-ar" class="tool-btn gold" onclick="setAdminLang('ar')" style="flex:1;font-size:12px;">🇸🇦 عربي</button>
+            <button id="admin-lang-en" class="tool-btn blue" onclick="setAdminLang('en')" style="flex:1;font-size:12px;">🇺🇸 English</button>
+          </div>
+
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">المظهر</div>
+          <div style="display:flex;gap:8px;margin-bottom:14px;">
+            <button id="admin-theme-dark" class="tool-btn" onclick="setAdminTheme('dark')" style="flex:1;font-size:12px;background:rgba(255,255,255,.06);">🌙 داكن</button>
+            <button id="admin-theme-light" class="tool-btn" onclick="setAdminTheme('light')" style="flex:1;font-size:12px;background:rgba(255,255,255,.06);">☀️ فاتح</button>
+          </div>
+
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">التحديث التلقائي</div>
+          <div style="display:flex;gap:8px;margin-bottom:14px;">
+            <button id="admin-refresh-on" class="tool-btn gold" onclick="setAutoRefresh(true)" style="flex:1;font-size:12px;">✅ مفعّل</button>
+            <button id="admin-refresh-off" class="tool-btn" onclick="setAutoRefresh(false)" style="flex:1;font-size:12px;background:rgba(255,255,255,.06);">⏸ إيقاف</button>
+          </div>
+
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">فترة التحديث (ثانية)</div>
+          <div class="range-wrap" style="margin-bottom:14px;">
+            <input type="range" min="10" max="120" step="10" value="30" id="refresh-interval-range"
+              oninput="document.getElementById('refresh-interval-val').textContent=this.value+'ث'; setRefreshInterval(+this.value)">
+            <span class="range-val" id="refresh-interval-val">30ث</span>
+          </div>
+
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">إشعارات صوتية</div>
+          <div style="display:flex;gap:8px;">
+            <button id="admin-sound-on" class="tool-btn gold" onclick="setAdminSound(true)" style="flex:1;font-size:12px;">🔔 مفعّلة</button>
+            <button id="admin-sound-off" class="tool-btn" onclick="setAdminSound(false)" style="flex:1;font-size:12px;background:rgba(255,255,255,.06);">🔕 مكتومة</button>
+          </div>
+        </div>
+
+        <!-- 🔒 الأمان -->
+        <div class="tool-card">
+          <div class="tool-title">🔒 الأمان</div>
           <div class="tool-desc">تغيير كلمة مرور الأدمن</div>
-          <input class="tool-input" id="new-password" type="password" placeholder="كلمة مرور جديدة للأدمن">
+          <input class="tool-input" id="new-password" type="password" placeholder="كلمة مرور جديدة">
           <input class="tool-input" id="confirm-password" type="password" placeholder="تأكيد كلمة المرور">
           <div class="btn-row">
             <button class="tool-btn red" onclick="changeAdminPass()">🔑 تغيير كلمة المرور</button>
           </div>
           <div class="tool-msg" id="pass-msg"></div>
+
+          <div style="height:1px;background:var(--border2);margin:16px 0;"></div>
+          <div class="tool-title" style="font-size:13px;margin-bottom:6px;">🚪 الجلسة</div>
+          <div class="btn-row">
+            <button class="tool-btn red" onclick="adminLogout()">🚪 تسجيل خروج</button>
+          </div>
         </div>
+
+        <!-- 🗃️ قاعدة البيانات -->
         <div class="tool-card">
           <div class="tool-title">🗃️ قاعدة البيانات</div>
-          <div class="tool-desc">عمليات الصيانة</div>
+          <div class="tool-desc">تصدير وصيانة البيانات</div>
           <div class="btn-row">
-            <button class="tool-btn blue" onclick="exportAllPlayers()">📤 تصدير كل اللاعبين</button>
+            <button class="tool-btn blue" onclick="exportAllPlayers()">📤 تصدير اللاعبين (JSON)</button>
           </div>
           <div class="btn-row" style="margin-top:8px;">
-            <button class="tool-btn red" onclick="purgeOldActivity()">🧹 حذف سجلات قديمة (+30 يوم)</button>
+            <button class="tool-btn blue" onclick="exportVisitors()">📤 تصدير الزوار (JSON)</button>
+          </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="tool-btn red" onclick="purgeOldActivity()">🧹 حذف سجلات +30 يوم</button>
+          </div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="tool-btn red" onclick="purgeVisitorStats()">🧹 مسح إحصائيات الزوار القديمة</button>
           </div>
           <div class="tool-msg" id="db-msg"></div>
         </div>
+
+        <!-- ℹ️ النظام -->
         <div class="tool-card">
           <div class="tool-title">ℹ️ معلومات النظام</div>
           <div class="tool-desc">حالة Firebase والنظام</div>
           <div id="sys-info"><div class="loading"><span class="spinner-small"></span>جارٍ التحميل</div></div>
         </div>
+
       </div>
     </div>
 
@@ -966,6 +1058,7 @@ window.showPage = function(id){
 
 // ── INIT ──
 async function initDashboard(){
+  applyAdminPrefs();
   await loadAllPlayers();
   renderOverview();
   setInterval(()=>{ loadAllPlayers().then(()=>{ if(_currentPage==='overview') renderOverview(); }); }, 30000);
@@ -2632,6 +2725,122 @@ function renderHBar(elId, data){
       <div style="width:28px;text-align:right;font-size:11px;font-family:var(--mono);color:var(--text-dim);">${d.cnt}</div>
     </div>`).join('');
 }
+
+// ══════════════════════════════════════════════════════
+// 🔧 SIDEBAR TOGGLE
+// ══════════════════════════════════════════════════════
+function toggleSidebar(){
+  const sb = document.querySelector('.sidebar');
+  if(window.innerWidth <= 768){
+    sb.classList.toggle('open');
+    document.getElementById('sidebar-overlay').classList.toggle('visible', sb.classList.contains('open'));
+  } else {
+    sb.classList.toggle('collapsed');
+    const main = document.querySelector('.main');
+    if(main) main.style.marginRight = sb.classList.contains('collapsed') ? '0' : '240px';
+  }
+}
+function closeSidebar(){
+  const sb = document.querySelector('.sidebar');
+  sb.classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('visible');
+}
+// أغلق القائمة عند الضغط Escape
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSidebar(); });
+
+// ══════════════════════════════════════════════════════
+// ⚙️ ADMIN SETTINGS — إعدادات لوحة التحكم
+// ══════════════════════════════════════════════════════
+let _autoRefreshTimer = null;
+let _adminPrefs = {
+  lang: localStorage.getItem('admin_lang') || 'ar',
+  theme: localStorage.getItem('admin_theme') || 'dark',
+  autoRefresh: localStorage.getItem('admin_autorefresh') !== 'false',
+  refreshInterval: +(localStorage.getItem('admin_interval') || 30),
+  sound: localStorage.getItem('admin_sound') !== 'false',
+};
+
+function applyAdminPrefs(){
+  // لغة
+  document.documentElement.setAttribute('dir', _adminPrefs.lang==='ar'?'rtl':'ltr');
+  document.documentElement.setAttribute('lang', _adminPrefs.lang);
+  // مظهر
+  if(_adminPrefs.theme==='light') document.body.classList.add('admin-light');
+  else document.body.classList.remove('admin-light');
+  // التحديث التلقائي
+  if(_autoRefreshTimer){ clearInterval(_autoRefreshTimer); _autoRefreshTimer=null; }
+  if(_adminPrefs.autoRefresh){
+    _autoRefreshTimer = setInterval(()=>{
+      const page = document.querySelector('.page.active')?.id?.replace('page-','');
+      if(page==='overview') loadOverview();
+      else if(page==='rooms') loadRooms();
+      else if(page==='visitors') loadVisitors();
+    }, _adminPrefs.refreshInterval * 1000);
+  }
+  // تحديث أزرار الإعدادات
+  ['ar','en'].forEach(l=>{
+    const b=document.getElementById('admin-lang-'+l);
+    if(b) b.style.opacity = _adminPrefs.lang===l?'1':'0.5';
+  });
+  ['dark','light'].forEach(t=>{
+    const b=document.getElementById('admin-theme-'+t);
+    if(b) b.style.opacity = _adminPrefs.theme===t?'1':'0.5';
+  });
+  const ron=document.getElementById('admin-refresh-on'), roff=document.getElementById('admin-refresh-off');
+  if(ron) ron.style.opacity = _adminPrefs.autoRefresh?'1':'0.5';
+  if(roff) roff.style.opacity = !_adminPrefs.autoRefresh?'1':'0.5';
+  const son=document.getElementById('admin-sound-on'), soff=document.getElementById('admin-sound-off');
+  if(son) son.style.opacity = _adminPrefs.sound?'1':'0.5';
+  if(soff) soff.style.opacity = !_adminPrefs.sound?'1':'0.5';
+  const ri=document.getElementById('refresh-interval-range');
+  if(ri){ ri.value=_adminPrefs.refreshInterval; document.getElementById('refresh-interval-val').textContent=_adminPrefs.refreshInterval+'ث'; }
+}
+
+window.setAdminLang = function(l){
+  _adminPrefs.lang=l; localStorage.setItem('admin_lang',l); applyAdminPrefs();
+  notify(l==='ar'?'✅ تم تغيير اللغة للعربية':'✅ Language changed to English','success');
+};
+window.setAdminTheme = function(t){
+  _adminPrefs.theme=t; localStorage.setItem('admin_theme',t); applyAdminPrefs();
+  notify(t==='light'?'☀️ مظهر فاتح':'🌙 مظهر داكن','success');
+};
+window.setAutoRefresh = function(on){
+  _adminPrefs.autoRefresh=on; localStorage.setItem('admin_autorefresh',on); applyAdminPrefs();
+  notify(on?'✅ التحديث التلقائي مفعّل':'⏸ التحديث التلقائي متوقف','success');
+};
+window.setRefreshInterval = function(sec){
+  _adminPrefs.refreshInterval=sec; localStorage.setItem('admin_interval',sec); applyAdminPrefs();
+};
+window.setAdminSound = function(on){
+  _adminPrefs.sound=on; localStorage.setItem('admin_sound',on); applyAdminPrefs();
+};
+window.adminLogout = function(){
+  if(!confirm('تأكيد تسجيل الخروج؟')) return;
+  sessionStorage.removeItem('coup_admin_auth');
+  location.reload();
+};
+window.exportVisitors = async function(){
+  try{
+    const snap = await get(r('admin/visitors'));
+    if(!snap.exists()){ notify('❌ لا توجد بيانات','error'); return; }
+    const data = JSON.stringify(Object.values(snap.val()), null, 2);
+    const blob = new Blob([data], {type:'application/json'});
+    const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='visitors_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+    notify('✅ تم التصدير','success');
+  }catch(e){ notify('❌ '+e.message,'error'); }
+};
+window.purgeVisitorStats = async function(){
+  if(!confirm('هل تريد حذف إحصائيات الزوار الأقدم من 30 يوماً؟')) return;
+  try{
+    const snap = await get(r('admin/stats/daily'));
+    if(!snap.exists()){ notify('لا توجد بيانات','info'); return; }
+    const cutoff = new Date(Date.now()-30*86400000).toISOString().slice(0,10);
+    const dels = Object.keys(snap.val()).filter(k=>k<cutoff);
+    await Promise.all(dels.map(k=>remove(r(`admin/stats/daily/${k}`))));
+    notify(`✅ تم حذف ${dels.length} يوم`,'success');
+  }catch(e){ notify('❌ '+e.message,'error'); }
+};
 
 async function logActivity(type, msg, uid){
   await push(r('admin/activity'), { type, msg, uid, ts: Date.now() });
