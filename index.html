@@ -1069,11 +1069,14 @@ async function loadAllPlayers(){
   try{
     const snap = await get(r('admin/players'));
     if(snap.exists()){
-      _allPlayers = Object.values(snap.val()).sort((a,b)=>b.lastSeen-a.lastSeen);
+      _allPlayers = Object.values(snap.val())
+        .filter(p=>p && p.uid) // تجاهل السجلات الفارغة
+        .sort((a,b)=>(b.lastSeen||0)-(a.lastSeen||0));
+    } else {
+      _allPlayers = [];
     }
-    // أيضاً اقرأ rooms لتحديث الغرف الحالية
     return _allPlayers;
-  }catch(e){ return []; }
+  }catch(e){ console.error('loadAllPlayers:', e); return []; }
 }
 
 async function getActiveRooms(){
@@ -1093,29 +1096,15 @@ async function renderOverview(){
   const weekTs = todayTs - 6*86400000;
 
   const total = _allPlayers.length;
-  const todayCount = _allPlayers.filter(p=>p.firstSeen>=todayTs).length;
-  const weekCount  = _allPlayers.filter(p=>p.firstSeen>=weekTs).length;
+  const todayCount  = _allPlayers.filter(p=>p.firstSeen>=todayTs).length;
+  const weekCount   = _allPlayers.filter(p=>p.firstSeen>=weekTs).length;
   const onlineCount = _allPlayers.filter(p=>(now-p.lastSeen)<120000).length;
   const totalSessions = _allPlayers.reduce((s,p)=>s+(p.sessions||0),0);
-  // اقرأ totalPlayMs من Firebase مباشرة للحصول على أحدث قيمة
-  let freshPlayers = _allPlayers;
-  try{
-    const freshSnap = await get(r('admin/players'));
-    if(freshSnap.exists()) freshPlayers = Object.values(freshSnap.val());
-  }catch(e){}
-  const totalPlayMs   = freshPlayers.reduce((s,p)=>s+(p.totalPlayMs||0),0);
-  const avgPlayMs     = freshPlayers.filter(p=>p.totalPlayMs>0).length
-    ? Math.round(totalPlayMs / freshPlayers.filter(p=>p.totalPlayMs>0).length)
-    : 0;
-  // حدّث _allPlayers بالبيانات الجديدة
-  if(freshPlayers.length) {
-    freshPlayers.forEach(fp=>{
-      const lp = _allPlayers.find(x=>x.uid===fp.uid);
-      if(lp && fp.totalPlayMs) lp.totalPlayMs = fp.totalPlayMs;
-    });
-  }
-  const activeRooms = await getActiveRooms();
+  const totalPlayMs   = _allPlayers.reduce((s,p)=>s+(p.totalPlayMs||0),0);
+  const avgPlayMs     = _allPlayers.filter(p=>p.totalPlayMs>0).length
+    ? Math.round(totalPlayMs / _allPlayers.filter(p=>p.totalPlayMs>0).length) : 0;
 
+  // أظهر البيانات فوراً بدون انتظار
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card" style="--accent:var(--gold)">
       <div class="stat-icon">👥</div>
@@ -1130,7 +1119,7 @@ async function renderOverview(){
     </div>
     <div class="stat-card" style="--accent:var(--sapphire-lt)">
       <div class="stat-icon">🎮</div>
-      <div class="stat-val">${activeRooms}</div>
+      <div class="stat-val" id="active-rooms-val">…</div>
       <div class="stat-lbl">غرف نشطة</div>
     </div>
     <div class="stat-card" style="--accent:var(--gold)">
@@ -1152,7 +1141,7 @@ async function renderOverview(){
       <div class="stat-icon">⏱</div>
       <div class="stat-val" style="font-size:22px;">${fmtMsShort(avgPlayMs)}</div>
       <div class="stat-lbl">متوسط وقت اللعب</div>
-      <div class="stat-delta up">لاعبون لديهم بيانات: ${freshPlayers.filter(p=>p.totalPlayMs>0).length}</div>
+      <div class="stat-delta up">لاعبون لديهم بيانات: ${_allPlayers.filter(p=>p.totalPlayMs>0).length}</div>
     </div>
     <div class="stat-card" style="--accent:var(--emerald-lt)">
       <div class="stat-icon">🕐</div>
@@ -1167,6 +1156,15 @@ async function renderOverview(){
   `;
   document.getElementById('last-refresh').textContent = new Date().toLocaleTimeString('ar-SA');
   renderBarCharts();
+
+  // الغرف النشطة — تحميل منفصل لا يُعيق الصفحة
+  getActiveRooms().then(n=>{
+    const el = document.getElementById('active-rooms-val');
+    if(el) el.textContent = n;
+  }).catch(()=>{
+    const el = document.getElementById('active-rooms-val');
+    if(el) el.textContent = '—';
+  });
 }
 
 // ── BAR CHARTS ──
