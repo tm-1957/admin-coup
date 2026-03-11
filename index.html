@@ -418,7 +418,12 @@ svg.line-chart{width:100%;height:120px;}
       <div class="table-wrap">
         <div class="table-header">
           <div class="table-title">اللاعبون <span id="players-count" style="font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-right:8px;"></span></div>
-          <input class="search-inp" id="player-search" placeholder="ابحث عن لاعب..." oninput="filterPlayers()">
+          <div style="display:flex;gap:8px;">
+            <input class="search-inp" id="player-search" placeholder="ابحث بالاسم..." oninput="filterPlayers()" style="width:160px;">
+            <input class="search-inp" id="player-uid-search" placeholder="بحث بـ UID..." style="width:160px;font-family:var(--mono);font-size:11px;"
+              onkeydown="if(event.key==='Enter') lookupPlayerById(this.value.trim())">
+            <button class="tool-btn gold" onclick="lookupPlayerById(document.getElementById('player-uid-search').value.trim())" style="padding:7px 12px;font-size:11px;">🔍</button>
+          </div>
         </div>
         <div id="players-table-wrap">
           <div class="loading">جارٍ التحميل <span class="spinner-small"></span></div>
@@ -1154,15 +1159,60 @@ window.filterPlayers = function(){
 };
 
 // ── PLAYER DETAIL ──
-window.showPlayerDetail = function(uid){
-  const p = _allPlayers.find(x=>x.uid===uid); if(!p) return;
+window.lookupPlayerById = async function(uid){
+  if(!uid){ notify('❌ أدخل UID','error'); return; }
+  // أولاً في الكاش
+  const cached = _allPlayers.find(x=>x.uid===uid || x.uid?.startsWith(uid));
+  if(cached){ showPlayerDetail(cached.uid); return; }
+  // ثم Firebase مباشرة
+  try{
+    notify('⏳ جارٍ البحث...','info');
+    const snap = await get(r(`admin/players/${uid}`));
+    if(snap.exists()){
+      const pd = snap.val();
+      if(!_allPlayers.find(x=>x.uid===pd.uid)) _allPlayers.push(pd);
+      showPlayerDetail(pd.uid);
+    } else {
+      notify('❌ لا يوجد لاعع بهذا الـ ID','error');
+    }
+  }catch(e){ notify('❌ خطأ: '+e.message,'error'); }
+};
+
+window.showPlayerDetail = async function(uid){
+  const p = _allPlayers.find(x=>x.uid===uid);
+  if(!p){
+    // حاول تحميله مباشرة من Firebase (وصول بعد الإغلاق)
+    try{
+      const snap = await get(r(`admin/players/${uid}`));
+      if(snap.exists()){ _allPlayers.push(snap.val()); return showPlayerDetail(uid); }
+    }catch(e){}
+    notify('❌ اللاعع غير موجود','error'); return;
+  }
   showPage('player-detail');
+
+  // جلب lastGame إن وُجد
+  let lastGameHtml = '<div style="font-size:12px;color:var(--text-muted);">لا توجد بيانات</div>';
+  try{
+    const lgSnap = await get(r(`admin/players/${uid}`));
+    if(lgSnap.exists()){
+      const full = lgSnap.val();
+      if(full.lastGame){
+        const lg = full.lastGame;
+        lastGameHtml = `
+          <div class="info-row"><span class="info-key">الغرفة</span><span class="info-val" style="font-family:var(--mono);">${lg.roomId||'—'}</span></div>
+          <div class="info-row"><span class="info-key">الوقت</span><span class="info-val">${fmtDate(lg.ts)}</span></div>
+          <div class="info-row"><span class="info-key">العملات</span><span class="info-val">◈ ${lg.coins??'—'}</span></div>
+          <div class="info-row"><span class="info-key">الحالة</span><span class="info-val">${lg.eliminated?'💀 خرج':'✅ بقي'}</span></div>`;
+      }
+    }
+  }catch(e){}
+
   document.getElementById('detail-grid').innerHTML = `
     <div>
       <div class="detail-card">
         <div class="player-av">${p.av||'🤴'}</div>
         <div class="player-name-big">${esc(p.name||'—')}</div>
-        <div class="player-id-small">${p.uid||'—'}</div>
+        <div class="player-id-small" style="cursor:pointer;" onclick="navigator.clipboard.writeText('${p.uid}').then(()=>notify('✅ نُسخ','success'))" title="نسخ الـ ID">${p.uid||'—'} 📋</div>
         ${p.banned?'<div style="text-align:center;margin-top:10px;"><span class="badge badge-banned">محظور</span></div>':''}
         <div class="detail-actions">
           ${p.banned
@@ -1170,6 +1220,11 @@ window.showPlayerDetail = function(uid){
             : `<button class="action-btn warn" onclick="banPlayer('${p.uid}')">🚫 حظر</button>`}
           <button class="action-btn warn" onclick="deletePlayerData('${p.uid}')">🗑️ حذف البيانات</button>
         </div>
+      </div>
+      <!-- آخر لعبة -->
+      <div class="detail-card" style="margin-top:12px;">
+        <div style="font-family:var(--serif);font-size:14px;color:var(--gold);margin-bottom:12px;">🎮 آخر لعبة</div>
+        ${lastGameHtml}
       </div>
     </div>
     <div class="detail-card">
