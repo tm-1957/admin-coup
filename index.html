@@ -974,7 +974,7 @@ body.admin-light .nav-item:hover{ background:rgba(0,0,0,.04); }
 
 <script type="module">
 import { initializeApp }                                     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, get, set, update, remove, push, onValue, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, get, set, update, remove, push, onValue, off, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const FB = {
   apiKey:"AIzaSyCaQdotTFYyT0QQWgCv2_Li2OGnxOQmmB8",
@@ -1059,9 +1059,16 @@ window.showPage = function(id){
 // ── INIT ──
 async function initDashboard(){
   applyAdminPrefs();
-  await loadAllPlayers();
-  renderOverview();
-  setInterval(()=>{ loadAllPlayers().then(()=>{ if(_currentPage==='overview') renderOverview(); }); }, 30000);
+  try{ await loadAllPlayers(); } catch(e){ console.error('loadAllPlayers failed:', e); }
+  try{ await renderOverview(); } catch(e){
+    console.error('renderOverview failed:', e);
+    const sg = document.getElementById('stats-grid');
+    if(sg) sg.innerHTML = '<div style="color:var(--crimson-lt);padding:20px;">❌ خطأ في التحميل — تحقق من اتصال Firebase</div>';
+  }
+  setInterval(async ()=>{
+    try{ await loadAllPlayers(); } catch(e){}
+    if(_currentPage==='overview') try{ await renderOverview(); } catch(e){}
+  }, 30000);
 }
 
 // ── LOAD DATA ──
@@ -2451,7 +2458,9 @@ window.stopSpectate = function(){
 };
 
 function renderSpectateGame(roomId, gd){
-  const players = Array.isArray(gd.players) ? gd.players : Object.values(gd.players||{});
+  // Firebase يحوّل arrays لـ objects أحياناً — نضمن أننا نتعامل مع arrays
+  const toArr = v => Array.isArray(v) ? v : (v && typeof v==='object' ? Object.values(v) : []);
+  const players = toArr(gd.players);
   const curPlayer = players[gd.turn] || {};
   document.getElementById('sp-turn-name').textContent = curPlayer.name || '—';
   document.getElementById('sp-treasury').textContent  = gd.treasury ?? '—';
@@ -2461,12 +2470,15 @@ function renderSpectateGame(roomId, gd){
   if(bar){
     bar.innerHTML = players.map((p,i)=>{
       const isActive = i === gd.turn;
-      const dots = (p.cards||[]).map((c,ci)=>`<div class="sp-card-dot ${p.revealed?.[ci]?'revealed':''}"></div>`).join('');
+      const cards    = toArr(p.cards);
+      const revealed = toArr(p.revealed);
+      const dots = cards.map((c,ci)=>`<div class="sp-card-dot ${revealed[ci]?'revealed':''}"></div>`).join('');
+      const coinVal = (p.coins !== undefined && p.coins !== null) ? p.coins : '?';
       return `<div class="sp-player-card${isActive?' active-turn':''}${p.eliminated?' eliminated':''}">
         <div class="sp-av">${p.av||'🤴'}</div>
         <div class="sp-name">${esc(p.name||'—')}${p.isBot?' 🤖':''}</div>
-        <div class="sp-coins">◈ ${p.coins??'?'}</div>
-        <div class="sp-cards">${dots}</div>
+        <div class="sp-coins">◈ ${coinVal}</div>
+        <div class="sp-cards">${dots||'<span style="font-size:9px;color:var(--text-muted);">—</span>'}</div>
         ${p.eliminated?'<div style="font-size:9px;text-align:center;color:var(--crimson);margin-top:4px;">💀 خرج</div>':''}
       </div>`;
     }).join('');
@@ -2488,7 +2500,11 @@ function renderSpectateGame(roomId, gd){
   // الأوراق المكشوفة
   const rev = document.getElementById('sp-revealed');
   if(rev){
-    const revealed = players.flatMap(p=>(p.cards||[]).filter((_,ci)=>p.revealed?.[ci]).map(c=>({player:p.name||'—', card:c})));
+    const revealed = players.flatMap(p=>{
+      const cards   = toArr(p.cards);
+      const revArr  = toArr(p.revealed);
+      return cards.filter((_,ci)=>revArr[ci]).map(c=>({player:p.name||'—', card:c}));
+    });
     if(!revealed.length){
       rev.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">لا توجد أوراق مكشوفة</div>';
     } else {
