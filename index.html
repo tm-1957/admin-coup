@@ -2569,18 +2569,69 @@ function spCtrl_renderCardEdit(p, idx){
   const wrap = document.getElementById('ctrl-cards-wrap');
   if(!wrap) return;
   const toArr = v => Array.isArray(v) ? v : (v&&typeof v==='object'?Object.values(v):[]);
-  const cards   = toArr(p.cards);
+  const cards    = toArr(p.cards);
   const revealed = toArr(p.revealed);
-  wrap.innerHTML = cards.map((c,ci)=>`
-    <div style="display:flex;align-items:center;gap:5px;">
-      <select class="sp-card-sel" id="ctrl-card-${idx}-${ci}" style="flex:1;">
-        ${SP_CARD_NAMES.map(n=>`<option value="${n}" ${c===n?'selected':''}>${n}</option>`).join('')}
-      </select>
-      <label style="font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:3px;">
-        <input type="checkbox" id="ctrl-rev-${idx}-${ci}" ${revealed[ci]?'checked':''} style="width:12px;height:12px;"> مكشوف
-      </label>
-    </div>`).join('');
+  const cardColors = { Duke:'#c084fc', Captain:'#60a5fa', Assassin:'#f87171', Contessa:'#fb923c', Ambassador:'#4ade80' };
+
+  wrap.innerHTML = cards.map((c,ci)=>{
+    const isDead = !!revealed[ci];
+    const col    = cardColors[c] || 'var(--gold)';
+    return `
+    <div style="background:rgba(255,255,255,.03);border:1px solid ${isDead?'rgba(176,48,32,.4)':'rgba(255,255,255,.08)'};border-radius:8px;padding:8px 10px;transition:.2s;" id="ctrl-card-row-${idx}-${ci}">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <div style="width:8px;height:8px;border-radius:50%;background:${isDead?'var(--crimson)':col};flex-shrink:0;"></div>
+        <select class="sp-card-sel" id="ctrl-card-${idx}-${ci}" style="flex:1;color:${col};font-weight:700;"
+          onchange="spCtrl_onCardChange(${idx},${ci},this.value)">
+          ${SP_CARD_NAMES.map(n=>`<option value="${n}" ${c===n?'selected':''}>${n}</option>`).join('')}
+        </select>
+        <span style="font-size:10px;color:${isDead?'var(--crimson-lt)':'var(--emerald-lt)'};">${isDead?'💀 مقصي':'✅ حي'}</span>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button onclick="spCtrl_revealCard(${idx},${ci})" 
+          style="flex:1;padding:4px;border-radius:5px;border:1px solid rgba(176,48,32,.4);background:rgba(176,48,32,.1);color:var(--crimson-lt);font-size:10px;cursor:pointer;${isDead?'opacity:.4;pointer-events:none;':''}">
+          💀 إقصاء الكرت
+        </button>
+        <button onclick="spCtrl_restoreCard(${idx},${ci})" 
+          style="flex:1;padding:4px;border-radius:5px;border:1px solid rgba(40,160,90,.4);background:rgba(40,160,90,.1);color:var(--emerald-lt);font-size:10px;cursor:pointer;${!isDead?'opacity:.4;pointer-events:none;':''}">
+          ✅ إعادة الكرت
+        </button>
+      </div>
+    </div>`;
+  }).join('');
 }
+
+window.spCtrl_onCardChange = function(pIdx, ci, newCard){
+  // حدّث لون الـ dot فوراً
+  const cardColors = { Duke:'#c084fc', Captain:'#60a5fa', Assassin:'#f87171', Contessa:'#fb923c', Ambassador:'#4ade80' };
+  const sel = document.getElementById(`ctrl-card-${pIdx}-${ci}`);
+  if(sel) sel.style.color = cardColors[newCard] || 'var(--gold)';
+};
+
+window.spCtrl_revealCard = async function(pIdx, ci){
+  if(!_spectateGameData) return;
+  const toArr = v => Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);
+  const players = toArr(_spectateGameData.players).map((p,i)=>{
+    if(i !== pIdx) return p;
+    const rev = [...toArr(p.revealed)];
+    rev[ci] = true;
+    // تحقق إذا كل الكروت مكشوفة — اللاعع يكون eliminated
+    const eliminated = rev.every(r=>r);
+    return {...p, revealed: rev, eliminated};
+  });
+  await spCtrl_write({ players });
+};
+
+window.spCtrl_restoreCard = async function(pIdx, ci){
+  if(!_spectateGameData) return;
+  const toArr = v => Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);
+  const players = toArr(_spectateGameData.players).map((p,i)=>{
+    if(i !== pIdx) return p;
+    const rev = [...toArr(p.revealed)];
+    rev[ci] = false;
+    return {...p, revealed: rev, eliminated: false};
+  });
+  await spCtrl_write({ players });
+};
 
 async function spCtrl_write(updates){
   if(!_spectateRoomId){ notify('❌ لا توجد غرفة نشطة','error'); return; }
