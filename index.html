@@ -348,7 +348,30 @@ svg.line-chart{width:100%;height:120px;}
 .sp-player-card .sp-cards{display:flex;justify-content:center;gap:4px;margin-top:6px;}
 .sp-card-dot{width:10px;height:14px;border-radius:2px;background:var(--gold);opacity:.8;}
 .sp-card-dot.revealed{background:var(--crimson);opacity:.6;}
+.sp-mini-card{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;border-radius:6px;padding:3px 7px;font-size:9px;font-weight:700;line-height:1.3;border:1.5px solid;min-width:40px;cursor:default;transition:.15s;}
+.sp-mini-card.dead{opacity:.35;text-decoration:line-through;}
+.sp-mini-card.hidden{background:rgba(40,40,60,.5);border-color:rgba(255,255,255,.12);color:var(--text-dim);}
+.sp-mini-card.Duke{background:rgba(130,80,200,.18);border-color:rgba(160,100,240,.6);color:#c084fc;}
+.sp-mini-card.Captain{background:rgba(30,80,200,.18);border-color:rgba(60,120,240,.6);color:#60a5fa;}
+.sp-mini-card.Assassin{background:rgba(160,30,30,.18);border-color:rgba(200,50,50,.6);color:#f87171;}
+.sp-mini-card.Contessa{background:rgba(160,60,30,.18);border-color:rgba(210,90,40,.6);color:#fb923c;}
+.sp-mini-card.Ambassador{background:rgba(30,130,80,.18);border-color:rgba(50,180,100,.6);color:#4ade80;}
 .sp-log-entry{padding:9px 18px;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px;color:var(--text-dim);line-height:1.5;}
+.sp-edit-panel{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px;}
+.sp-edit-title{font-family:var(--serif);font-size:13px;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.sp-edit-section{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border2);}
+.sp-edit-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.sp-edit-label{font-size:10px;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;}
+.sp-edit-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.sp-edit-name{font-size:12px;color:var(--text);min-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sp-num-inp{width:52px;background:var(--bg0);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:12px;padding:4px 6px;text-align:center;}
+.sp-card-sel{background:var(--bg0);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:10px;padding:3px 4px;}
+.sp-apply-btn{padding:3px 9px;border-radius:5px;border:none;cursor:pointer;font-size:10px;font-weight:700;background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);}
+.sp-apply-btn:hover{background:rgba(201,168,76,.28);}
+.sp-apply-btn.red{background:rgba(176,48,32,.15);color:var(--crimson-lt);border-color:rgba(176,48,32,.3);}
+.sp-apply-btn.red:hover{background:rgba(176,48,32,.3);}
+.sp-apply-btn.blue{background:rgba(42,90,204,.15);color:var(--sapphire-lt);border-color:rgba(42,90,204,.3);}
+.sp-apply-btn.blue:hover{background:rgba(42,90,204,.3);}
 .sp-log-entry:last-child{border-bottom:none;}
 .report-card{padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.03);transition:.15s;}
 .report-card:hover{background:rgba(255,255,255,.02);}
@@ -835,7 +858,7 @@ body.admin-light .nav-item:hover{ background:rgba(0,0,0,.04); }
 
       <!-- عرض اللعبة -->
       <div id="spectate-view" style="display:none;">
-        <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;">
+        <div style="display:grid;grid-template-columns:1fr 260px 260px;gap:14px;">
           <!-- اللوحة الرئيسية -->
           <div>
             <!-- شريط اللاعبين -->
@@ -863,6 +886,55 @@ body.admin-light .nav-item:hover{ background:rgba(0,0,0,.04); }
             <div class="chart-card">
               <div class="chart-title">🃏 الأوراق المكشوفة</div>
               <div id="sp-revealed"></div>
+            </div>
+          </div>
+          <!-- لوحة التحكم -->
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="sp-edit-panel">
+              <div class="sp-edit-title">🎛️ لوحة التحكم</div>
+              <!-- الخزينة والدور -->
+              <div class="sp-edit-section">
+                <div class="sp-edit-label">إعدادات اللعبة</div>
+                <div class="sp-edit-row">
+                  <span class="sp-edit-name">🪙 الخزينة</span>
+                  <input id="ctrl-treasury" class="sp-num-inp" type="number" min="0" max="100" value="0">
+                  <button class="sp-apply-btn" onclick="spCtrl_setTreasury()">تطبيق</button>
+                </div>
+                <div class="sp-edit-row">
+                  <span class="sp-edit-name">🎯 الدور</span>
+                  <input id="ctrl-turn" class="sp-num-inp" type="number" min="0" max="10" value="0" style="width:44px;">
+                  <button class="sp-apply-btn" onclick="spCtrl_setTurn()">تطبيق</button>
+                </div>
+              </div>
+              <!-- تعديل اللاعبين -->
+              <div class="sp-edit-section">
+                <div class="sp-edit-label">تعديل لاعع</div>
+                <select id="ctrl-player-sel" class="sp-card-sel" style="width:100%;margin-bottom:8px;font-size:11px;" onchange="spCtrl_onPlayerChange()">
+                  <option value="">— اختر لاععاً —</option>
+                </select>
+                <div class="sp-edit-row">
+                  <span class="sp-edit-name">◈ كوينز</span>
+                  <input id="ctrl-coins" class="sp-num-inp" type="number" min="0" max="50" value="2">
+                  <button class="sp-apply-btn" onclick="spCtrl_setCoins()">تطبيق</button>
+                </div>
+                <div class="sp-edit-label" style="margin-top:8px;">الكروت</div>
+                <div id="ctrl-cards-wrap" style="display:flex;flex-direction:column;gap:5px;"></div>
+                <button class="sp-apply-btn blue" onclick="spCtrl_applyCards()" style="width:100%;margin-top:6px;">💾 حفظ الكروت</button>
+                <div class="sp-edit-row" style="margin-top:6px;">
+                  <button class="sp-apply-btn red" onclick="spCtrl_eliminate()" style="width:100%">💀 إقصاء اللاعع</button>
+                </div>
+                <div class="sp-edit-row">
+                  <button class="sp-apply-btn blue" onclick="spCtrl_revive()" style="width:100%">✅ إعادة اللاعع</button>
+                </div>
+              </div>
+              <!-- أدوات عامة -->
+              <div class="sp-edit-section">
+                <div class="sp-edit-label">أدوات</div>
+                <div class="sp-edit-row" style="flex-direction:column;align-items:stretch;gap:5px;">
+                  <button class="sp-apply-btn" onclick="spCtrl_shuffleTurn()" style="width:100%">🔀 خلط ترتيب اللاعبين</button>
+                  <button class="sp-apply-btn red" onclick="spCtrl_endGame()" style="width:100%">🛑 إنهاء اللعبة</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2387,8 +2459,7 @@ window.purgeOldRooms = async function(olderThanMs){
 // ══════════════════════════════════════════════════════
 // 👁️ SPECTATE — مشاهدة مباشرة
 // ══════════════════════════════════════════════════════
-let _spectateUnsub = null;
-let _spectateLogUnsub = null;
+let _spectateUnsub = null, _spectateLogUnsub = null, _spectateRoomId = null, _spectateGameData = null;
 
 async function loadActiveRoomsForSpectate(){
   const el = document.getElementById('spectate-active-rooms');
@@ -2425,6 +2496,7 @@ window.startSpectate = function(){
 
 window.startSpectateRoom = function(roomId){
   stopSpectate();
+  _spectateRoomId = roomId;
   document.getElementById('spectate-room-input').value = roomId;
   document.getElementById('spectate-empty').style.display = 'none';
   document.getElementById('spectate-view').style.display  = 'block';
@@ -2434,7 +2506,14 @@ window.startSpectateRoom = function(roomId){
   _spectateUnsub = onValue(r(`rooms/${roomId}/game`), snap => {
     const gd = snap.val();
     if(!gd){ document.getElementById('spectate-view').style.display='none'; document.getElementById('spectate-empty').style.display=''; return; }
+    _spectateGameData = gd;
     renderSpectateGame(roomId, gd);
+    spCtrl_refreshPlayerSel(gd);
+    // حدّث حقول التحكم تلقائياً
+    const _tEl = document.getElementById('ctrl-treasury');
+    const _tnEl = document.getElementById('ctrl-turn');
+    if(_tEl && gd.treasury!=null) _tEl.value = gd.treasury;
+    if(_tnEl && gd.turn!=null) _tnEl.value = gd.turn;
   });
 
   // استمع للسجل
@@ -2456,6 +2535,163 @@ window.stopSpectate = function(){
   document.getElementById('spectate-view').style.display  = 'none';
   document.getElementById('spectate-empty').style.display = '';
 };
+// ══════════════════════════════════════════════════════
+// 🎛️ SPECTATE CONTROL PANEL
+// ══════════════════════════════════════════════════════
+const SP_CARD_NAMES = ['Duke','Captain','Assassin','Contessa','Ambassador'];
+
+function spCtrl_refreshPlayerSel(gd){
+  const sel = document.getElementById('ctrl-player-sel');
+  if(!sel) return;
+  const toArr = v => Array.isArray(v) ? v : (v&&typeof v==='object'?Object.values(v):[]);
+  const players = toArr(gd.players);
+  // حافظ على الاختيار الحالي
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">— اختر لاعباً —</option>' +
+    players.map((p,i)=>`<option value="${i}" ${prev==String(i)?'selected':''}>${p.av||''} ${esc(p.name||'—')}${p.eliminated?' 💀':''}</option>`).join('');
+  // حدّث كروت اللاعع إذا كان محدداً
+  if(prev !== '' && players[+prev]) spCtrl_renderCardEdit(players[+prev], +prev);
+}
+
+function spCtrl_onPlayerChange(){
+  const sel = document.getElementById('ctrl-player-sel');
+  const idx = sel.value;
+  if(idx==='' || !_spectateGameData) return;
+  const toArr = v => Array.isArray(v) ? v : (v&&typeof v==='object'?Object.values(v):[]);
+  const p = toArr(_spectateGameData.players)[+idx];
+  if(!p) return;
+  document.getElementById('ctrl-coins').value = p.coins ?? 2;
+  spCtrl_renderCardEdit(p, +idx);
+}
+window.spCtrl_onPlayerChange = spCtrl_onPlayerChange;
+
+function spCtrl_renderCardEdit(p, idx){
+  const wrap = document.getElementById('ctrl-cards-wrap');
+  if(!wrap) return;
+  const toArr = v => Array.isArray(v) ? v : (v&&typeof v==='object'?Object.values(v):[]);
+  const cards   = toArr(p.cards);
+  const revealed = toArr(p.revealed);
+  wrap.innerHTML = cards.map((c,ci)=>`
+    <div style="display:flex;align-items:center;gap:5px;">
+      <select class="sp-card-sel" id="ctrl-card-${idx}-${ci}" style="flex:1;">
+        ${SP_CARD_NAMES.map(n=>`<option value="${n}" ${c===n?'selected':''}>${n}</option>`).join('')}
+      </select>
+      <label style="font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:3px;">
+        <input type="checkbox" id="ctrl-rev-${idx}-${ci}" ${revealed[ci]?'checked':''} style="width:12px;height:12px;"> مكشوف
+      </label>
+    </div>`).join('');
+}
+
+async function spCtrl_write(updates){
+  if(!_spectateRoomId){ notify('❌ لا توجد غرفة نشطة','error'); return; }
+  try{
+    await update(r(`rooms/${_spectateRoomId}/game`), updates);
+    notify('✅ تم التحديث','success');
+  }catch(e){ notify('❌ '+e.message,'error'); }
+}
+
+window.spCtrl_setTreasury = async function(){
+  const v = +document.getElementById('ctrl-treasury').value;
+  if(isNaN(v)||v<0){ notify('❌ قيمة غير صحيحة','error'); return; }
+  await spCtrl_write({ treasury: v });
+};
+
+window.spCtrl_setTurn = async function(){
+  const v = +document.getElementById('ctrl-turn').value;
+  if(!_spectateGameData) return;
+  const toArr = t => Array.isArray(t)?t:(t&&typeof t==='object'?Object.values(t):[]);
+  const max = toArr(_spectateGameData.players).length - 1;
+  if(isNaN(v)||v<0||v>max){ notify(`❌ الدور يجب بين 0 و ${max}`,'error'); return; }
+  await spCtrl_write({ turn: v });
+};
+
+window.spCtrl_setCoins = async function(){
+  const sel = document.getElementById('ctrl-player-sel');
+  const idx = +sel.value;
+  if(sel.value===''){ notify('❌ اختر لاعباً أولاً','error'); return; }
+  const coins = +document.getElementById('ctrl-coins').value;
+  if(isNaN(coins)||coins<0){ notify('❌ قيمة غير صحيحة','error'); return; }
+  if(!_spectateGameData) return;
+  const toArr = v => Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);
+  const players = toArr(_spectateGameData.players).map((p,i)=> i===idx ? {...p, coins} : p);
+  await spCtrl_write({ players });
+};
+
+window.spCtrl_applyCards = async function(){
+  const sel = document.getElementById('ctrl-player-sel');
+  const idx = +sel.value;
+  if(sel.value===''){ notify('❌ اختر لاعباً أولاً','error'); return; }
+  if(!_spectateGameData) return;
+  const toArr = v => Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);
+  const players = toArr(_spectateGameData.players);
+  const p = players[idx]; if(!p) return;
+  const cards   = toArr(p.cards);
+  const newCards   = cards.map((_,ci) => (document.getElementById(`ctrl-card-${idx}-${ci}`)?.value || _));
+  const newRevealed = cards.map((_,ci) => !!(document.getElementById(`ctrl-rev-${idx}-${ci}`)?.checked));
+  const updated = players.map((pl,i)=> i===idx ? {...pl, cards:newCards, revealed:newRevealed} : pl);
+  await spCtrl_write({ players: updated });
+};
+window.spCtrl_applyCards = window.spCtrl_applyCards;
+
+window.spCtrl_eliminate = async function(){
+  const sel = document.getElementById('ctrl-player-sel');
+  if(sel.value===''){ notify('❌ اختر لاعباً أولاً','error'); return; }
+  const idx = +sel.value;
+  if(!_spectateGameData) return;
+  const toArr = v => Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);
+  const players = toArr(_spectateGameData.players).map((p,i)=>
+    i===idx ? {...p, eliminated:true, revealed:[true,true]} : p);
+  await spCtrl_write({ players });
+};
+
+window.spCtrl_revive = async function(){
+  const sel = document.getElementById('ctrl-player-sel');
+  if(sel.value===''){ notify('❌ اختر لاعباً أولاً','error'); return; }
+  const idx = +sel.value;
+  if(!_spectateGameData) return;
+  const toArr = v => Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);
+  const players = toArr(_spectateGameData.players).map((p,i)=>
+    i===idx ? {...p, eliminated:false, revealed:[false,false]} : p);
+  await spCtrl_write({ players });
+};
+
+window.spCtrl_shuffleTurn = async function(){
+  if(!_spectateGameData) return;
+  const toArr = v => Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);
+  const alive = toArr(_spectateGameData.players).filter(p=>!p.eliminated);
+  if(!alive.length) return;
+  const randIdx = Math.floor(Math.random()*alive.length);
+  const toArr2 = v => Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):[]);
+  const all = toArr2(_spectateGameData.players);
+  const randPlayer = alive[randIdx];
+  const realIdx = all.findIndex(p=>p.id===randPlayer.id);
+  await spCtrl_write({ turn: realIdx>=0?realIdx:0 });
+};
+
+window.spCtrl_endGame = async function(){
+  openModal('🛑 إنهاء اللعبة','هل أنت متأكد من إنهاء اللعبة في هذه الغرفة؟',[
+    { label:'نعم، أنهِ', cls:'btn-red', cb: async ()=>{
+      await spCtrl_write({ status:'ended' });
+      if(_spectateRoomId) await update(r(`rooms/${_spectateRoomId}`),{status:'ended'});
+    }},
+    { label:'إلغاء', cls:'btn-dim', cb:()=>{} }
+  ]);
+};
+
+const SP_CARDS = {
+  Duke:       { icon:'💜', label:'Duke' },
+  Captain:    { icon:'🔵', label:'Captain' },
+  Assassin:   { icon:'🔴', label:'Assassin' },
+  Contessa:   { icon:'🟠', label:'Contessa' },
+  Ambassador: { icon:'🟢', label:'Ambassador' },
+};
+function spMiniCard(name, isDead){
+  if(!name || name==='?'){
+    return `<div class="sp-mini-card hidden${isDead?' dead':''}">❓<br><span style="font-size:8px;">مخفي</span></div>`;
+  }
+  const cd = SP_CARDS[name] || { icon:'🃏', label:name };
+  return `<div class="sp-mini-card ${name}${isDead?' dead':''}" title="${name}">${cd.icon}<br>${cd.label}</div>`;
+}
 
 function renderSpectateGame(roomId, gd){
   // Firebase يحوّل arrays لـ objects أحياناً — نضمن أننا نتعامل مع arrays
@@ -2472,13 +2708,15 @@ function renderSpectateGame(roomId, gd){
       const isActive = i === gd.turn;
       const cards    = toArr(p.cards);
       const revealed = toArr(p.revealed);
-      const dots = cards.map((c,ci)=>`<div class="sp-card-dot ${revealed[ci]?'revealed':''}"></div>`).join('');
       const coinVal = (p.coins !== undefined && p.coins !== null) ? p.coins : '?';
+      const miniCards = cards.length
+        ? cards.map((c,ci) => spMiniCard(c, !!revealed[ci])).join('')
+        : '<span style="font-size:9px;color:var(--text-muted);">—</span>';
       return `<div class="sp-player-card${isActive?' active-turn':''}${p.eliminated?' eliminated':''}">
         <div class="sp-av">${p.av||'🤴'}</div>
         <div class="sp-name">${esc(p.name||'—')}${p.isBot?' 🤖':''}</div>
         <div class="sp-coins">◈ ${coinVal}</div>
-        <div class="sp-cards">${dots||'<span style="font-size:9px;color:var(--text-muted);">—</span>'}</div>
+        <div class="sp-cards" style="flex-wrap:wrap;gap:4px;justify-content:center;">${miniCards}</div>
         ${p.eliminated?'<div style="font-size:9px;text-align:center;color:var(--crimson);margin-top:4px;">💀 خرج</div>':''}
       </div>`;
     }).join('');
